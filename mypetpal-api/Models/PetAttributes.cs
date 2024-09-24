@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using mypetpal.Data.Common.Interface;
+using System.Text.Json.Serialization;
 using static mypetpal.Data.Common.Enums.PetEnums;
 
 namespace mypetpal.Models
@@ -26,6 +27,7 @@ namespace mypetpal.Models
         [Required]
         public PetStatus PetStatus { get; set; }
 
+        [JsonIgnore]
         public PetMetadata Metadata { get; set; } = new PetMetadata();
 
         [MaxLength(250)]

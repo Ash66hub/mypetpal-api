@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.7.3" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -30,6 +31,8 @@
     <None Remove="Data\Common\" />
     <None Remove="Data\Common\Interface\" />
     <None Remove="Data\Common\Enums\" />
+    <None Remove="Services\" />
+    <None Remove="Services\Contracts\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Controllers\" />
@@ -39,6 +42,8 @@
     <Folder Include="Data\Common\" />
     <Folder Include="Data\Common\Interface\" />
     <Folder Include="Data\Common\Enums\" />
+    <Folder Include="Services\" />
+    <Folder Include="Services\Contracts\" />
   </ItemGroup>
   <ItemGroup>
     <Content Remove="wwwroot\" />

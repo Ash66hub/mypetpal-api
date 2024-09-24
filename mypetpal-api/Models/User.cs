@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using mypetpal.Data.Common.Interface;
+using System.Text.Json.Serialization;
 
 
 namespace mypetpal.Models
@@ -13,11 +14,15 @@ namespace mypetpal.Models
         [MaxLength(50)]
         public string Username { get; set; }
 
-        [Required]
         [MaxLength(100)]
         public string Email { get; set; }
 
-        public UserMetadata? Metadata { get; set; }
+        [Required]
+        [JsonIgnore]
+        public string Password { get; set; } = "encrypted";
+
+        [JsonIgnore]
+        public UserMetadata Metadata { get; set; } = new UserMetadata();
     }
 
 

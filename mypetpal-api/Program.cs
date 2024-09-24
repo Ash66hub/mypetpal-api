@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using mypetpal.dbContext;
+using mypetpal_api.Services;
+using mypetpal.Services.Contracts;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,9 +27,11 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Register Services so that they can be injected as needed
+builder.Services.AddScoped<IUserService, UserService>();
+
 var app = builder.Build();
 
-// Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
