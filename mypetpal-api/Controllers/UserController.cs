@@ -1,67 +1,84 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using mypetpal.Services.Contracts;
 using mypetpal.Models;
-using mypetpal.dbContext;
 
 namespace mypetpal.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     public class UsersController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IUserService _userService;
 
-        public UsersController(ApplicationDbContext context)
+        public UsersController(IUserService userService)
         {
-            _context = context;
+            _userService = userService;
         }
 
-        // GET: api/users
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<User>>> GetUsers()
-        {
-            return await _context.Users.ToListAsync();
-        }
-
-        // GET: api/users/{id}
-        [HttpGet("{id}")]
-        public async Task<ActionResult<User>> GetUser(Guid id)
-        {
-            var user = await _context.Users.FindAsync(id);
-
-            if (user == null)
-            {
-                return NotFound();
-            }
-
-            return user;
-        }
-
-        // POST: api/users
+        // POST: User (Create new user)
         [HttpPost]
-        public async Task<ActionResult<User>> PostUser(User user)
+        public async Task<IActionResult> CreateUser([FromBody] User user)
         {
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(GetUser), new { id = user.UserId }, user);
+            try
+            {
+                var createdUser = await _userService.CreateNewUser(user.Username, user.Email, user.Password);
+                return CreatedAtAction(nameof(GetUserById), new { userId = createdUser.UserId }, createdUser);
+            }
+            catch (ArgumentException ex)
+            {
+                return Conflict(ex.Message); // Handle conflict if username or email already exists
+            }
         }
 
-        // DELETE: api/users/{id}
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteUser(Guid id)
+        // GET: User 
+        [HttpGet]
+        public async Task<IActionResult> GetAllUsers()
         {
-            var user = await _context.Users.FindAsync(id);
+            var users = await _userService.GetAllUsers();
+            return Ok(users);
+        }
+
+        // GET: User/{userId}
+        [HttpGet("{userId}")]
+        public async Task<IActionResult> GetUserById(string userId)
+        {
+            var user = await _userService.GetUserById(userId);
+
             if (user == null)
             {
                 return NotFound();
             }
 
-            _context.Users.Remove(user);
-            await _context.SaveChangesAsync();
+            return Ok(user);
+        }
+
+        // PATCH: User/{userId} (Edit username, email or password)
+        [HttpPatch("{userId}")]
+        public async Task<IActionResult> UpdateUser(string userId, [FromBody] User updatedUser)
+        {
+            try
+            {
+                var updated = await _userService.UpdateUser(userId, updatedUser.Username, updatedUser.Email, updatedUser.Password);
+                return Ok(updated);
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
+            }
+        }
+
+        // DELETE: User/{userId}
+        [HttpDelete("{userId}")]
+        public async Task<IActionResult> DeleteUser(string userId)
+        {
+            var success = await _userService.DeleteUser(userId);
+
+            if (!success)
+            {
+                return NotFound();
+            }
 
             return NoContent();
         }
     }
 }
-
