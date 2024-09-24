@@ -20,14 +20,17 @@ namespace mypetpal_api.Services
             {
                 throw new ArgumentException("Username or Email already exists.");
             }
-                
+
+            var userMetadata = new UserMetadata();
+            userMetadata.Metadata_createdUtc = DateTime.Now;
+
             var user = new User
             {
                 UserId = Guid.NewGuid().ToString(),
                 Username = username,
                 Email = email,
                 Password = BCrypt.Net.BCrypt.HashPassword(password),
-                Metadata = new UserMetadata()
+                Metadata = System.Text.Json.JsonSerializer.Serialize(userMetadata)
             };
 
             _context.Users.Add(user);

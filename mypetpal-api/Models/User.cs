@@ -22,7 +22,22 @@ namespace mypetpal.Models
         public string Password { get; set; } = "encrypted";
 
         [JsonIgnore]
-        public UserMetadata Metadata { get; set; } = new UserMetadata();
+        public string? Metadata { get; set; }
+
+
+        public UserMetadata GetUserMetadata()
+        {
+            if (string.IsNullOrEmpty(Metadata))
+            {
+                return new UserMetadata();
+            }
+            return System.Text.Json.JsonSerializer.Deserialize<UserMetadata>(Metadata);
+        }
+
+        public void SetUserMetadata(UserMetadata metadata)
+        {
+            Metadata = System.Text.Json.JsonSerializer.Serialize(metadata);
+        }
     }
 
 

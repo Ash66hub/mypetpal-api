@@ -38,14 +38,10 @@
     <Folder Include="Controllers\" />
     <Folder Include="Models\" />
     <Folder Include="Data\" />
-    <Folder Include="wwwroot\" />
     <Folder Include="Data\Common\" />
     <Folder Include="Data\Common\Interface\" />
     <Folder Include="Data\Common\Enums\" />
     <Folder Include="Services\" />
     <Folder Include="Services\Contracts\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Remove="wwwroot\" />
   </ItemGroup>
 </Project>
