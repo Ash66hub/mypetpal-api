@@ -17,7 +17,21 @@ namespace mypetpal.Models
         [MaxLength(100)]
         public string Email { get; set; }
 
-        public UserMetadata? Metadata { get; set; }
+        public string? Metadata { get; set; }
+
+        public UserMetadata GetUserMetadata()
+        {
+            if (string.IsNullOrEmpty(Metadata))
+            {
+                return new UserMetadata();
+            }
+            return System.Text.Json.JsonSerializer.Deserialize<UserMetadata>(Metadata);
+        }
+
+        public void SetUserMetadata(UserMetadata metadata)
+        {
+            Metadata = System.Text.Json.JsonSerializer.Serialize(metadata);
+        }
     }
 
 

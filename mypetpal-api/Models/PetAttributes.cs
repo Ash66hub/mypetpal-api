@@ -26,7 +26,8 @@ namespace mypetpal.Models
         [Required]
         public PetStatus PetStatus { get; set; }
 
-        public PetMetadata Metadata { get; set; } = new PetMetadata();
+        [MaxLength(1000)]
+        public string? Metadata { get; set; }
 
         [MaxLength(250)]
         public string PetAvatar { get; set; }
@@ -38,6 +39,22 @@ namespace mypetpal.Models
         public int Health { get; set; }
 
         public int Happiness { get; set; }
+
+        // Deserialize JSON string to PetMetadata object
+        public PetMetadata GetPetMetadata()
+        {
+            if (string.IsNullOrEmpty(Metadata))
+            {
+                return new PetMetadata();
+            }
+            return System.Text.Json.JsonSerializer.Deserialize<PetMetadata>(Metadata);
+        }
+
+        // Serialize PetMetadata object to JSON string
+        public void SetPetMetadata(PetMetadata metadata)
+        {
+            Metadata = System.Text.Json.JsonSerializer.Serialize(metadata);
+        }
     }
 
 
@@ -49,7 +66,5 @@ namespace mypetpal.Models
 
         public DateTime? Metadata_updatedUtc { get; set; }
     }
-
-    
 }
 
