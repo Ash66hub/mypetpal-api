@@ -35,12 +35,8 @@
     <Folder Include="Controllers\" />
     <Folder Include="Models\" />
     <Folder Include="Data\" />
-    <Folder Include="wwwroot\" />
     <Folder Include="Data\Common\" />
     <Folder Include="Data\Common\Interface\" />
     <Folder Include="Data\Common\Enums\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Remove="wwwroot\" />
   </ItemGroup>
 </Project>

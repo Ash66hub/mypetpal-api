@@ -41,9 +41,6 @@ namespace mypetpal.dbContext
             modelBuilder.Entity<PetAttributes>()
                 .HasKey(pa => pa.PetId);
 
-            modelBuilder.Ignore<PetMetadata>();
-
-            modelBuilder.Ignore<UserMetadata>();
 
             base.OnModelCreating(modelBuilder);
         }
