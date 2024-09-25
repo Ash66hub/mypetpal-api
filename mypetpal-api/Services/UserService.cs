@@ -58,7 +58,17 @@ namespace mypetpal_api.Services
                 throw new KeyNotFoundException("User not found");
             }
 
-            user.Password = "encrypted";
+            return user;
+        }
+
+        public async Task<User> GetUserByUsername(string username)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
+
+            if (user == null)
+            {
+                throw new KeyNotFoundException("User not found");
+            }
 
             return user;
         }
@@ -98,6 +108,18 @@ namespace mypetpal_api.Services
             await _context.SaveChangesAsync();
 
             return true;
+        }
+
+        public async Task SaveRefreshToken(string userId, string refreshToken) //not working
+        {
+            var user = await _context.Users.SingleOrDefaultAsync(u => u.UserId == userId);
+            if (user != null)
+            {
+                user.RefreshToken = refreshToken;
+
+                _context.Users.Update(user);
+                await _context.SaveChangesAsync();
+            }
         }
     }
 }
