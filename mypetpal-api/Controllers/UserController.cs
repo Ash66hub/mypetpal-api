@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using mypetpal.Services.Contracts;
 using mypetpal.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace mypetpal.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("[controller]")]
     public class UsersController : ControllerBase
@@ -16,6 +18,7 @@ namespace mypetpal.Controllers
         }
 
         // POST: User (Create new user)
+        [AllowAnonymous]
         [HttpPost]
         public async Task<IActionResult> CreateUser([FromBody] User user)
         {

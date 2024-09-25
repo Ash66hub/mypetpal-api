@@ -8,21 +8,22 @@ namespace mypetpal.Models
     public class User
     {
         [Key]
-        public string UserId { get; set; }
+        public string? UserId { get; set; }
 
         [Required]
         [MaxLength(50)]
-        public string Username { get; set; }
+        public string? Username { get; set; }
 
         [MaxLength(100)]
-        public string Email { get; set; }
+        public string? Email { get; set; }
 
         [Required]
-        [JsonIgnore]
-        public string Password { get; set; } = "encrypted";
+        public string? Password { get; set; }
 
         [JsonIgnore]
         public string? Metadata { get; set; }
+
+        public string? RefreshToken { get; set; }
 
 
         public UserMetadata GetUserMetadata()

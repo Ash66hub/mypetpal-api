@@ -8,11 +8,11 @@ namespace mypetpal.Models
     public class PetAttributes
     {
         [Key]
-        public string PetId { get; set; }
+        public string? PetId { get; set; }
 
         [Required]
         [MaxLength(50)]
-        public string PetName { get; set; }
+        public string? PetName { get; set; }
 
         [Required]
         [MaxLength(50)]
@@ -33,7 +33,7 @@ namespace mypetpal.Models
         public string? Metadata { get; set; }
 
         [MaxLength(250)]
-        public string PetAvatar { get; set; }
+        public string? PetAvatar { get; set; }
 
         // Pet Stats
 

@@ -10,8 +10,12 @@ namespace mypetpal.Services.Contracts
 
         Task<User> GetUserById(string userId);
 
+        Task<User> GetUserByUsername(string userId);
+
         Task<User> UpdateUser(string userId, string username, string email, string password);
 
         Task<bool> DeleteUser(string userId);
+
+        Task SaveRefreshToken(string userId, string refreshToken);
     }
 }

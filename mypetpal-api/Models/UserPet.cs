@@ -7,12 +7,12 @@ namespace mypetpal.Models
     public class UserPet
     {
         [Key]
-        public string PetId { get; set; }  
+        public string? PetId { get; set; }  
 
         [ForeignKey("User")]
-        public string UserId { get; set; }  
+        public string? UserId { get; set; }  
 
-        public PetAttributes PetAttributes { get; set; }
+        public PetAttributes? PetAttributes { get; set; }
     }
 }
 
