@@ -4,8 +4,8 @@ using Microsoft.IdentityModel.Tokens;
 using mypetpal.dbContext;
 using mypetpal_api.Services;
 using mypetpal.Services.Contracts;
-using Microsoft.Extensions.Options;
 using System.Text;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,7 +29,40 @@ builder.Services.AddControllers();
 
 // Add Swagger services
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "MyPetPal-Api",
+        Version = "v1"
+    });
+
+    // Define the BearerAuth scheme
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        In = ParameterLocation.Header,
+        Description = "Enter JWT with Bearer prefix in this format: Bearer {token}",
+        Name = "Authorization",  
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
+
+    // Apply Bearer token globally
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+            {
+                {
+                    new OpenApiSecurityScheme
+                    {
+                        Reference = new OpenApiReference
+                        {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "Bearer"
+                        }
+                    },
+                    Array.Empty<string>()
+                }
+            });
+});
 
 // Register Services so that they can be injected as needed
 builder.Services.AddScoped<IUserService, UserService>();
