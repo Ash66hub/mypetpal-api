@@ -3,7 +3,7 @@ using mypetpal.Services.Contracts;
 using mypetpal.Models;
 using mypetpal.dbContext;
 
-namespace mypetpal_api.Services
+namespace mypetpal.Services
 {
     public class UserService : IUserService
     {

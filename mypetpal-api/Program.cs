@@ -2,10 +2,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using mypetpal.dbContext;
-using mypetpal_api.Services;
+using mypetpal.Services;
 using mypetpal.Services.Contracts;
 using System.Text;
 using Microsoft.OpenApi.Models;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,7 +26,10 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connection));
 
 // Add controllers for API
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+});
 
 // Add Swagger services
 builder.Services.AddEndpointsApiExplorer();
@@ -66,6 +70,7 @@ builder.Services.AddSwaggerGen(c =>
 
 // Register Services so that they can be injected as needed
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IPetService, PetService>();
 
 // JWT Authorization
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
