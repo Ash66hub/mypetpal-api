@@ -40,7 +40,6 @@ namespace mypetpalapi.Migrations
                         .HasColumnType("nvarchar(1000)");
 
                     b.Property<string>("PetAvatar")
-                        .IsRequired()
                         .HasMaxLength(250)
                         .HasColumnType("nvarchar(250)");
 
@@ -73,7 +72,6 @@ namespace mypetpalapi.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Email")
-                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
@@ -82,6 +80,9 @@ namespace mypetpalapi.Migrations
 
                     b.Property<string>("Password")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RefreshToken")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Username")
@@ -100,7 +101,6 @@ namespace mypetpalapi.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("UserId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("PetId");
@@ -121,8 +121,7 @@ namespace mypetpalapi.Migrations
                     b.HasOne("mypetpal.Models.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("PetAttributes");
                 });
