@@ -15,17 +15,14 @@ namespace mypetpal.Models
         public string? PetName { get; set; }
 
         [Required]
-        [MaxLength(50)]
         public PetTypes PetType { get; set; }
 
-        [Required]
-        public int PetLevel { get; set; }
+        public int? PetLevel { get; set; }
 
-        [Required]
-        public int Age { get; set; }
 
-        [Required]
-        public PetStatus PetStatus { get; set; }
+        public int? Age { get; set; }
+
+        public PetStatus? PetStatus { get; set; }
 
 
         [MaxLength(1000)]

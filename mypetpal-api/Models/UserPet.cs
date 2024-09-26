@@ -10,9 +10,9 @@ namespace mypetpal.Models
         public string? PetId { get; set; }  
 
         [ForeignKey("User")]
-        public string? UserId { get; set; }  
+        public string? UserId { get; set; }
 
-        public PetAttributes? PetAttributes { get; set; }
+        public PetAttributes PetAttributes { get; set; } = new PetAttributes();
     }
 }
 
