@@ -10,6 +10,18 @@ using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Allow CORS for now. Later limit by appUrl
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll",
+        policy =>
+        {
+            policy.AllowAnyOrigin()
+                  .AllowAnyHeader() 
+                  .AllowAnyMethod(); 
+        });
+});
+
 // Load configuration based on the environment before building the app.
 builder.Configuration.AddEnvironmentVariables();
 
@@ -93,15 +105,12 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-else
+if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
 }
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseRouting();
 
