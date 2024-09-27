@@ -1,14 +1,15 @@
 using System.ComponentModel.DataAnnotations;
 using mypetpal.Data.Common.Interface;
 using System.Text.Json.Serialization;
-
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace mypetpal.Models
 {
     public class User
     {
         [Key]
-        public string? UserId { get; set; }
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public long UserId { get; set; }
 
         [Required]
         [MaxLength(50)]

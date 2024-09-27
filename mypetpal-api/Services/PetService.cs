@@ -15,7 +15,7 @@ namespace mypetpal.Services
             _context = context;
         }
 
-        public async Task<PetAttributes> CreatePetAsync(PetAttributes petAttributes, string userId)
+        public async Task<PetAttributes> CreatePetAsync(PetAttributes petAttributes, long userId)
         {
             var user = await _context.Users.FindAsync(userId);
             if (user == null)
@@ -25,7 +25,6 @@ namespace mypetpal.Services
 
             var newPet = new PetAttributes
             {
-                PetId = Guid.NewGuid().ToString(),
                 PetName = petAttributes.PetName,
                 PetType = petAttributes.PetType,
                 PetLevel = 1,
@@ -43,21 +42,25 @@ namespace mypetpal.Services
             };
             newPet.SetPetMetadata(petMetadata);
 
+            _context.PetAttributes.Add(newPet);
+            await _context.SaveChangesAsync();  
+
+        
             var userPet = new UserPet
             {
-                PetId = newPet.PetId,
+                PetId = newPet.PetId, 
                 UserId = userId,
                 PetAttributes = newPet
             };
 
-            _context.PetAttributes.Add(newPet);
+            // Add the UserPet relationship
             _context.UserPets.Add(userPet);
             await _context.SaveChangesAsync();
 
             return newPet;
         }
 
-        public async Task<List<PetAttributes>> GetAllPetsAsync(string userId)
+        public async Task<List<PetAttributes>> GetAllPetsAsync(long userId)
         {
             return await _context.UserPets
                 .Where(up => up.UserId == userId)
@@ -66,12 +69,12 @@ namespace mypetpal.Services
                 .ToListAsync();
         }
 
-        public async Task<PetAttributes?> GetPetByIdAsync(string petId)
+        public async Task<PetAttributes?> GetPetByIdAsync(long petId)
         {
             return await _context.PetAttributes.FindAsync(petId);
         }
 
-        public async Task<PetAttributes?> UpdatePetAsync(string petId, PetAttributes updatedPet)
+        public async Task<PetAttributes?> UpdatePetAsync(long petId, PetAttributes updatedPet)
         {
             var pet = await _context.PetAttributes.FindAsync(petId);
             if (pet == null)
@@ -107,7 +110,7 @@ namespace mypetpal.Services
             return pet;
         }
 
-        public async Task<bool> DeletePetAsync(string petId)
+        public async Task<bool> DeletePetAsync(long petId)
         {
             var pet = await _context.PetAttributes.FindAsync(petId);
             if (pet == null)

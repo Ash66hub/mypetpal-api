@@ -4,14 +4,14 @@ namespace mypetpal.Services.Contracts
 {
     public interface IPetService
     {
-        Task<PetAttributes> CreatePetAsync(PetAttributes petAttributes, string userId);
+        Task<PetAttributes> CreatePetAsync(PetAttributes petAttributes, long userId);
 
-        Task<List<PetAttributes>> GetAllPetsAsync(string userId);
+        Task<List<PetAttributes>> GetAllPetsAsync(long userId);
 
-        Task<PetAttributes?> GetPetByIdAsync(string petId);
+        Task<PetAttributes?> GetPetByIdAsync(long petId);
 
-        Task<PetAttributes?> UpdatePetAsync(string petId, PetAttributes updatedPet);
+        Task<PetAttributes?> UpdatePetAsync(long petId, PetAttributes updatedPet);
 
-        Task<bool> DeletePetAsync(string petId);
+        Task<bool> DeletePetAsync(long petId);
     }
 }

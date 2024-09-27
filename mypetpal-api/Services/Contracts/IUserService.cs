@@ -8,14 +8,14 @@ namespace mypetpal.Services.Contracts
 
         Task<IEnumerable<User>> GetAllUsers();
 
-        Task<User> GetUserById(string userId);
+        Task<User> GetUserById(long userId);
 
-        Task<User> GetUserByUsername(string userId);
+        Task<User> GetUserByUsername(string username);
 
-        Task<User> UpdateUser(string userId, string username, string email, string password);
+        Task<User> UpdateUser(long userId, string username, string email, string password);
 
-        Task<bool> DeleteUser(string userId);
+        Task<bool> DeleteUser(long userId);
 
-        Task SaveRefreshToken(string userId, string refreshToken);
+        Task SaveRefreshToken(long userId, string refreshToken);
     }
 }

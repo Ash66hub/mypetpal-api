@@ -19,7 +19,7 @@ namespace mypetpal.Controllers
 
         // POST: /Pets 
         [HttpPost]
-        public async Task<IActionResult> CreatePet([FromBody] PetAttributes petAttributes, [FromQuery] string userId)
+        public async Task<IActionResult> CreatePet([FromBody] PetAttributes petAttributes, [FromQuery] long userId)
         {
             try
             {
@@ -34,7 +34,7 @@ namespace mypetpal.Controllers
 
         // GET: /Pets?userId={userId}
         [HttpGet]
-        public async Task<IActionResult> GetAllPets([FromQuery] string userId)
+        public async Task<IActionResult> GetAllPets([FromQuery] long userId)
         {
             var pets = await _petService.GetAllPetsAsync(userId);
             if (!pets.Any())
@@ -47,7 +47,7 @@ namespace mypetpal.Controllers
 
         // GET: /Pets/{petId}
         [HttpGet("{petId}")]
-        public async Task<IActionResult> GetPetById(string petId)
+        public async Task<IActionResult> GetPetById(long petId)
         {
             var pet = await _petService.GetPetByIdAsync(petId);
             if (pet == null)
@@ -59,7 +59,7 @@ namespace mypetpal.Controllers
 
         // PATCH: /Pets/{petId} (Update pet attributes)
         [HttpPatch("{petId}")]
-        public async Task<IActionResult> UpdatePet(string petId, [FromBody] PetAttributes updatedPet)
+        public async Task<IActionResult> UpdatePet(long petId, [FromBody] PetAttributes updatedPet)
         {
             var pet = await _petService.UpdatePetAsync(petId, updatedPet);
             if (pet == null)
@@ -72,7 +72,7 @@ namespace mypetpal.Controllers
 
         // DELETE: /Pets/{petId}
         [HttpDelete("{petId}")]
-        public async Task<IActionResult> DeletePet(string petId)
+        public async Task<IActionResult> DeletePet(long petId)
         {
             var result = await _petService.DeletePetAsync(petId);
             if (!result)

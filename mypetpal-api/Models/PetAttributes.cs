@@ -2,13 +2,15 @@
 using mypetpal.Data.Common.Interface;
 using System.Text.Json.Serialization;
 using static mypetpal.Data.Common.Enums.PetEnums;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace mypetpal.Models
 {
     public class PetAttributes
     {
         [Key]
-        public string? PetId { get; set; }
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public long PetId { get; set; }
 
         [Required]
         [MaxLength(50)]
@@ -18,7 +20,6 @@ namespace mypetpal.Models
         public PetTypes PetType { get; set; }
 
         public int? PetLevel { get; set; }
-
 
         public int? Age { get; set; }
 
