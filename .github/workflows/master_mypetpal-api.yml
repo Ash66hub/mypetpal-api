@@ -61,5 +61,5 @@ jobs:
         with:
           app-name: 'mypetpal-api'
           slot-name: 'Production'
-          package: .
+          package: './myapp'
           
