@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace mypetpal.Controllers
 {
-    [Authorize]
+    //[Authorize]
     [ApiController]
     [Route("[controller]")]
     public class UsersController : ControllerBase
@@ -43,7 +43,7 @@ namespace mypetpal.Controllers
 
         // GET: User/{userId}
         [HttpGet("{userId}")]
-        public async Task<IActionResult> GetUserById(string userId)
+        public async Task<IActionResult> GetUserById(long userId)
         {
             var user = await _userService.GetUserById(userId);
 
@@ -57,7 +57,7 @@ namespace mypetpal.Controllers
 
         // PATCH: User/{userId} (Edit username, email or password)
         [HttpPatch("{userId}")]
-        public async Task<IActionResult> UpdateUser(string userId, [FromBody] User updatedUser)
+        public async Task<IActionResult> UpdateUser(long userId, [FromBody] User updatedUser)
         {
             try
             {
@@ -72,7 +72,7 @@ namespace mypetpal.Controllers
 
         // DELETE: User/{userId}
         [HttpDelete("{userId}")]
-        public async Task<IActionResult> DeleteUser(string userId)
+        public async Task<IActionResult> DeleteUser(long userId)
         {
             var success = await _userService.DeleteUser(userId);
 

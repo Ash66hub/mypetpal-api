@@ -26,7 +26,6 @@ namespace mypetpal.Services
 
             var user = new User
             {
-                UserId = Guid.NewGuid().ToString(),
                 Username = username,
                 Email = email,
                 Password = BCrypt.Net.BCrypt.HashPassword(password),
@@ -49,7 +48,7 @@ namespace mypetpal.Services
             }).ToListAsync();
         }
 
-        public async Task<User> GetUserById(string userId)
+        public async Task<User> GetUserById(long userId)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
 
@@ -73,7 +72,7 @@ namespace mypetpal.Services
             return user;
         }
 
-        public async Task<User> UpdateUser(string userId, string username, string email, string password)
+        public async Task<User> UpdateUser(long userId, string username, string email, string password)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
 
@@ -95,7 +94,7 @@ namespace mypetpal.Services
             return user;
         }
 
-        public async Task<bool> DeleteUser(string userId)
+        public async Task<bool> DeleteUser(long userId)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
 
@@ -110,7 +109,7 @@ namespace mypetpal.Services
             return true;
         }
 
-        public async Task SaveRefreshToken(string userId, string refreshToken) //not working
+        public async Task SaveRefreshToken(long userId, string refreshToken) //not working
         {
             var user = await _context.Users.SingleOrDefaultAsync(u => u.UserId == userId);
             if (user != null)

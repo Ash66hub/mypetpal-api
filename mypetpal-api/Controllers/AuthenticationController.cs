@@ -30,7 +30,7 @@ namespace mypetpal.Controllers
             IActionResult response = Unauthorized();
             var _user = await AuthenticateUser(user);
 
-            if(_user != null && _user.UserId != null)
+            if(_user != null)
             {
                 var token = GenerateToken();
 
@@ -44,12 +44,12 @@ namespace mypetpal.Controllers
 
         [AllowAnonymous]
         [HttpPost("refreshToken")]
-        public async Task<IActionResult> Refresh(string userId, string refreshToken)
+        public async Task<IActionResult> Refresh(long userId, string refreshToken)
         {
             // Validate refresh token and return new token pair
             var user = await _userService.GetUserById(userId);
 
-            if (user == null || user.UserId == null || user.RefreshToken != refreshToken)
+            if (user == null || user.RefreshToken != refreshToken)
             {
                 return Unauthorized("Invalid refresh token or user");
             }

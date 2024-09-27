@@ -5,7 +5,7 @@
 namespace mypetpalapi.Migrations
 {
     /// <inheritdoc />
-    public partial class Migration23Sep : Migration
+    public partial class Initalmigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -14,13 +14,15 @@ namespace mypetpalapi.Migrations
                 name: "PetAttributes",
                 columns: table => new
                 {
-                    PetId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    PetId = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "20572, 4"),
                     PetName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    PetType = table.Column<int>(type: "int", maxLength: 50, nullable: false),
-                    PetLevel = table.Column<int>(type: "int", nullable: false),
-                    Age = table.Column<int>(type: "int", nullable: false),
-                    PetStatus = table.Column<int>(type: "int", nullable: false),
-                    PetAvatar = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: false),
+                    PetType = table.Column<int>(type: "int", nullable: false),
+                    PetLevel = table.Column<int>(type: "int", nullable: true),
+                    Age = table.Column<int>(type: "int", nullable: true),
+                    PetStatus = table.Column<int>(type: "int", nullable: true),
+                    Metadata = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
+                    PetAvatar = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: true),
                     Xp = table.Column<int>(type: "int", nullable: false),
                     Health = table.Column<int>(type: "int", nullable: false),
                     Happiness = table.Column<int>(type: "int", nullable: false)
@@ -34,9 +36,13 @@ namespace mypetpalapi.Migrations
                 name: "Users",
                 columns: table => new
                 {
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    UserId = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "13923, 3"),
                     Username = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    Email = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false)
+                    Email = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    Password = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Metadata = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    RefreshToken = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -47,8 +53,8 @@ namespace mypetpalapi.Migrations
                 name: "UserPets",
                 columns: table => new
                 {
-                    PetId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    PetId = table.Column<long>(type: "bigint", nullable: false),
+                    UserId = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
