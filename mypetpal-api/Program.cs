@@ -107,7 +107,7 @@ var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Error");
+    //app.UseExceptionHandler("/Error");      //Set this back later after successful deploy
 }
 app.UseSwagger();
 app.UseSwaggerUI();
