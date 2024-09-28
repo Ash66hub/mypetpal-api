@@ -16,29 +16,46 @@ namespace mypetpal.Controllers
     {
         private readonly IConfiguration _config;
         private readonly IUserService _userService;
+        private readonly ILogger<AuthenticationController> _logger;
 
-        public AuthenticationController(IConfiguration configuration, IUserService userService)
+        public AuthenticationController(IConfiguration configuration, IUserService userService, ILogger<AuthenticationController> logger)
         {
             _config = configuration;
             _userService = userService;
+            _logger = logger;
         }
 
         [AllowAnonymous]
         [HttpPost]
         public async Task<IActionResult> Login(User user)
         {
+            _logger.LogInformation("Login attempt for user: {Username}", user.Username);
+
             IActionResult response = Unauthorized();
             var _user = await AuthenticateUser(user);
 
-            if(_user != null)
+            if (_user != null)
             {
-                var token = GenerateToken();
+                try
+                {
+                    var token = GenerateToken();
+                    var refreshToken = GenerateRefreshToken();
+                    await _userService.SaveRefreshToken(_user.UserId, refreshToken);
 
-                var refreshToken = GenerateRefreshToken();
-
-                await _userService.SaveRefreshToken(_user.UserId, refreshToken);
-                response = Ok(new { token , refreshToken});
+                    _logger.LogInformation("Authentication successful for user: {Username}", _user.Username);
+                    response = Ok(new { token, refreshToken });
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "An error occurred while generating tokens for user: {Username}", _user.Username);
+                    response = StatusCode(500, "Internal server error");
+                }
             }
+            else
+            {
+                _logger.LogWarning("Authentication failed for user: {Username}", user.Username);
+            }
+
             return response;
         }
 
