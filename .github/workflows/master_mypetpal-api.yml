@@ -25,14 +25,13 @@ jobs:
         run: dotnet build --configuration Release
 
       - name: dotnet publish
-        run: dotnet publish ./mypetpal-api/mypetpal-api.csproj -c Release -o "${{ env.DOTNET_ROOT }}/myapp/myapp"
-       
+        run: dotnet publish -c Release -o ${{ github.workspace }}/myapp
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: .net-app
-          path: ${{env.DOTNET_ROOT}}/myapp/myapp
+          path: ${{ github.workspace }}/myapp
 
   deploy:
     runs-on: windows-latest
@@ -52,9 +51,9 @@ jobs:
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_B73EA71455234721BDF63FFC682A88BE }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_2B9B88B0F92D410AB313EC4809279020 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_62846C422EC94E50BF8E1DB9FB54FAE6 }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_B5BF386F041F43568C0D1DC0E03E6EF5 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_19E0F13F6AD1412D9A51659072473D94 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_C900A95B72D449AD8D083E33591D2384 }}
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
@@ -63,4 +62,3 @@ jobs:
           app-name: 'mypetpal-api'
           slot-name: 'Production'
           package: .
-          
