@@ -25,8 +25,7 @@ jobs:
         run: dotnet clean
 
       - name: List Published Files
-        run: |
-          ls "${{env.DOTNET_ROOT}}/myapp"
+        run: ls
         
       - name: Build with dotnet
         run: dotnet build --configuration Release
