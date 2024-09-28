@@ -1,7 +1,7 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Build and deploy ASP.Net Core app to Azure Web App - mypetpal-webapi
+name: Build and deploy ASP.Net Core app to Azure Web App - mypetpal-api
 
 on:
   push:
@@ -25,13 +25,13 @@ jobs:
         run: dotnet build --configuration Release
 
       - name: dotnet publish
-        run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp
+        run: dotnet publish -c Release -o ${{ github.workspace }}/myapp
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: .net-app
-          path: ${{env.DOTNET_ROOT}}/myapp
+          path: ${{ github.workspace }}/myapp
 
   deploy:
     runs-on: windows-latest
@@ -51,15 +51,14 @@ jobs:
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_C9879C12025F408AB01262E1FADAA560 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_4FA5CA46E1374B378CD7D22E1E579B66 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_B97017A2322C4054B7FF9ABF3021140B }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_B5BF386F041F43568C0D1DC0E03E6EF5 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_19E0F13F6AD1412D9A51659072473D94 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_C900A95B72D449AD8D083E33591D2384 }}
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'mypetpal-webapi'
+          app-name: 'mypetpal-api'
           slot-name: 'Production'
           package: .
-          
