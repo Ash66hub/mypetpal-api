@@ -1,19 +1,12 @@
-﻿using Microsoft.Data.SqlClient;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using mypetpal.Models;
 
 namespace mypetpal.dbContext
 {
     public class ApplicationDbContext : DbContext
     {
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, IHttpContextAccessor accessor): base(options)
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
-            var conn = Database.GetDbConnection() as SqlConnection;
-            if (conn !=null && accessor.HttpContext != null)
-            {
-                conn.AccessToken = accessor.HttpContext.Request.Headers["X-MS-TOKEN-AAD-ACCESS-TOKEN"];
-            }
-            
         }
 
         public DbSet<User> Users { get; set; }
