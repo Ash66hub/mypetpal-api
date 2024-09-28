@@ -21,6 +21,13 @@ jobs:
         with:
           dotnet-version: '6.0.x'
 
+      - name: Clean build
+        run: dotnet clean
+
+      - name: List Published Files
+        run: |
+          ls "${{env.DOTNET_ROOT}}/myapp"
+        
       - name: Build with dotnet
         run: dotnet build --configuration Release
 
