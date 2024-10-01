@@ -8,10 +8,14 @@ namespace mypetpal.Services
     public class UserService : IUserService
     {
         private readonly ApplicationDbContext _context;
+        private readonly ILogger<UserService> _logger;
+        private readonly string _connectionString;
 
-        public UserService(ApplicationDbContext context)
+        public UserService(ApplicationDbContext context, ILogger<UserService> logger, IConfiguration configuration)
         {
             _context = context;
+            _logger = logger;
+            _connectionString = configuration.GetConnectionString("AZURE_SQL_CONNECTIONSTRING");
         }
 
         public async Task<User> CreateNewUser(string username, string email, string password)
@@ -111,6 +115,8 @@ namespace mypetpal.Services
 
         public async Task SaveRefreshToken(long userId, string refreshToken) //not working
         {
+            _logger.LogInformation("USING CONNECTION STRINNGG: {ConnectionString}", _connectionString);
+
             var user = await _context.Users.SingleOrDefaultAsync(u => u.UserId == userId);
             if (user != null)
             {
