@@ -101,7 +101,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateLifetime = true,
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidAudience = builder.Configuration["Jwt:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
         };
     });
    
@@ -113,8 +113,10 @@ var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())
 {
-    //app.UseExceptionHandler("/Error");      //Set this back later after successful deploy
+    app.UseExceptionHandler("/Error");     
 }
+app.UseCors("AllowAll");
+
 app.UseSwagger();
 app.UseSwaggerUI();
 

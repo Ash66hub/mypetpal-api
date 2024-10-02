@@ -9,16 +9,14 @@ namespace mypetpal.Services
     {
         private readonly ApplicationDbContext _context;
         private readonly ILogger<UserService> _logger;
-        private readonly string _connectionString;
 
-        public UserService(ApplicationDbContext context, ILogger<UserService> logger, IConfiguration configuration)
+        public UserService(ApplicationDbContext context, ILogger<UserService> logger)
         {
             _context = context;
             _logger = logger;
-            _connectionString = configuration.GetConnectionString("AZURE_SQL_CONNECTIONSTRING");
         }
 
-        public async Task<User> CreateNewUser(string username, string email, string password)
+        public async Task<User> CreateNewUser(string? username, string? email, string password)
         {
             if (_context.Users.Any(u => u.Username == username || u.Email == email))
             {
@@ -52,26 +50,24 @@ namespace mypetpal.Services
             }).ToListAsync();
         }
 
-        public async Task<User> GetUserById(long userId)
+        public async Task<User?> GetUserById(long userId)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
-
-            if (user == null)
-            {
-                throw new KeyNotFoundException("User not found");
-            }
 
             return user;
         }
 
-        public async Task<User> GetUserByUsername(string username)
+        public async Task<User?> GetUserByUsername(string username)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
 
-            if (user == null)
-            {
-                throw new KeyNotFoundException("User not found");
-            }
+            return user;
+        }
+
+
+        public async Task<User?> GetUserByEmail(string email)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
 
             return user;
         }
@@ -93,6 +89,8 @@ namespace mypetpal.Services
                 user.Password = BCrypt.Net.BCrypt.HashPassword(password);
             }
 
+            _logger.LogInformation($"Update User {userId}");
+
             await _context.SaveChangesAsync();
 
             return user;
@@ -107,20 +105,22 @@ namespace mypetpal.Services
                 return false;
             }
 
+            _logger.LogInformation($"Deleting User {userId}");
+
             _context.Users.Remove(user);
             await _context.SaveChangesAsync();
 
             return true;
         }
 
-        public async Task SaveRefreshToken(long userId, string refreshToken) //not working
+        public async Task SaveRefreshToken(long userId, string refreshToken) 
         {
-            _logger.LogInformation("USING CONNECTION STRINNGG: {ConnectionString}", _connectionString);
-
             var user = await _context.Users.SingleOrDefaultAsync(u => u.UserId == userId);
             if (user != null)
             {
                 user.RefreshToken = refreshToken;
+
+                _logger.LogInformation("Saving refresh token");
 
                 _context.Users.Update(user);
                 await _context.SaveChangesAsync();
