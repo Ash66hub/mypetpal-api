@@ -12,6 +12,8 @@ namespace mypetpal.Services.Contracts
 
         Task<User> GetUserByUsername(string username);
 
+        Task<User> GetUserByEmail(string email);
+
         Task<User> UpdateUser(long userId, string username, string email, string password);
 
         Task<bool> DeleteUser(long userId);
