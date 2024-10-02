@@ -29,7 +29,7 @@ namespace mypetpal.Controllers
         [HttpPost]
         public async Task<IActionResult> Login(User user)
         {
-            _logger.LogInformation("Login attempt for user: {Username}", user.Username);
+            _logger.LogInformation("Login attempt for user: {Username},{Email}", user.Username, user.Email);
 
             IActionResult response = Unauthorized();
             var _user = await AuthenticateUser(user);
@@ -79,12 +79,22 @@ namespace mypetpal.Controllers
             return Ok(new { token = newToken, refreshToken = newRefreshToken });
         }
 
-
         private async Task<User?> AuthenticateUser(User user)
         {
-            if(user.Username != null)
+            if(user.Username != null || user.Email !=null)
             {
-                var existingUser = await _userService.GetUserByUsername(user.Username);
+                User existingUser;
+
+                if(user.Email != null)
+                {
+                    existingUser = await _userService.GetUserByEmail(user.Email);
+                }
+                else
+                {
+                    existingUser = await _userService.GetUserByUsername(user.Username);
+                }
+               
+
                 if (existingUser != null && VerifyPassword(user.Password, existingUser.Password))
                 {
                     return existingUser;

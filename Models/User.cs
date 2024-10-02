@@ -11,15 +11,14 @@ namespace mypetpal.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long UserId { get; set; }
 
-        [Required]
         [MaxLength(50)]
-        public string? Username { get; set; }
+        public string? Username { get; set; } 
 
         [MaxLength(100)]
         public string? Email { get; set; }
 
         [Required]
-        public string? Password { get; set; }
+        public string Password { get; set; } = string.Empty;
 
         [JsonIgnore]
         public string? Metadata { get; set; }

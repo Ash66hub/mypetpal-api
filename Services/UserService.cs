@@ -70,7 +70,20 @@ namespace mypetpal.Services
 
             if (user == null)
             {
-                throw new KeyNotFoundException("User not found");
+                throw new KeyNotFoundException("Username not found");
+            }
+
+            return user;
+        }
+
+
+        public async Task<User> GetUserByEmail(string email)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+
+            if (user == null)
+            {
+                throw new KeyNotFoundException("User with email not found");
             }
 
             return user;
@@ -93,6 +106,8 @@ namespace mypetpal.Services
                 user.Password = BCrypt.Net.BCrypt.HashPassword(password);
             }
 
+            _logger.LogInformation($"Update User {userId}");
+
             await _context.SaveChangesAsync();
 
             return user;
@@ -107,20 +122,22 @@ namespace mypetpal.Services
                 return false;
             }
 
+            _logger.LogInformation($"Deleting User {userId}");
+
             _context.Users.Remove(user);
             await _context.SaveChangesAsync();
 
             return true;
         }
 
-        public async Task SaveRefreshToken(long userId, string refreshToken) //not working
+        public async Task SaveRefreshToken(long userId, string refreshToken) 
         {
-            _logger.LogInformation("USING CONNECTION STRINNGG: {ConnectionString}", _connectionString);
-
             var user = await _context.Users.SingleOrDefaultAsync(u => u.UserId == userId);
             if (user != null)
             {
                 user.RefreshToken = refreshToken;
+
+                _logger.LogInformation("Saving refresh token");
 
                 _context.Users.Update(user);
                 await _context.SaveChangesAsync();
