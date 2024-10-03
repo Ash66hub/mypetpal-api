@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace mypetpal.Controllers
 {
-    //[Authorize]
+    [Authorize]
     [ApiController]
     [Route("[controller]")]
     public class UsersController : ControllerBase
@@ -61,8 +61,16 @@ namespace mypetpal.Controllers
         {
             try
             {
-                var updated = await _userService.UpdateUser(userId, updatedUser.Username, updatedUser.Email, updatedUser.Password);
-                return Ok(updated);
+                if(updatedUser.Username != null && updatedUser.Email != null)
+                {
+                    var updated = await _userService.UpdateUser(userId, updatedUser.Username, updatedUser.Email, updatedUser.Password);
+                    return Ok(updated);
+                }
+                else
+                {
+                    return NotFound();
+                }
+                
             }
             catch (KeyNotFoundException)
             {

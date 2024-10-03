@@ -102,7 +102,7 @@ namespace mypetpal.Services
             pet.Xp = updatedPet.Xp;
             pet.PetLevel = CalculatePetLevel(pet.Xp);
 
-            var metadata = pet.GetPetMetadata(); 
+            var metadata = pet.GetPetMetadata() ?? new PetMetadata(); 
             metadata.Metadata_updatedUtc = DateTime.UtcNow;
             pet.SetPetMetadata(metadata);
 

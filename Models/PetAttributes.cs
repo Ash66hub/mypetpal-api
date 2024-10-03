@@ -42,7 +42,7 @@ namespace mypetpal.Models
         public int Happiness { get; set; }
 
         // Deserialize JSON string to PetMetadata object
-        public PetMetadata GetPetMetadata()
+        public PetMetadata? GetPetMetadata()
         {
             if (string.IsNullOrEmpty(Metadata))
             {

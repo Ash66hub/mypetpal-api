@@ -26,7 +26,7 @@ namespace mypetpal.Models
         public string? RefreshToken { get; set; }
 
 
-        public UserMetadata GetUserMetadata()
+        public UserMetadata? GetUserMetadata()
         {
             if (string.IsNullOrEmpty(Metadata))
             {

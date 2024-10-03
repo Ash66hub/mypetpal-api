@@ -83,13 +83,13 @@ namespace mypetpal.Controllers
         {
             if(user.Username != null || user.Email !=null)
             {
-                User existingUser;
+                User? existingUser = null;
 
                 if(user.Email != null)
                 {
                     existingUser = await _userService.GetUserByEmail(user.Email);
                 }
-                else
+                else if(user.Username != null)
                 {
                     existingUser = await _userService.GetUserByUsername(user.Username);
                 }
@@ -110,7 +110,7 @@ namespace mypetpal.Controllers
 
         private string GenerateToken()
         {
-            var secret = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
+            var secret = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
             var credentials = new SigningCredentials(secret, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(_config["Jwt:Issuer"], _config["Jwt:Audience"], null,

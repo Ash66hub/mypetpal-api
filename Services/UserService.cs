@@ -9,16 +9,14 @@ namespace mypetpal.Services
     {
         private readonly ApplicationDbContext _context;
         private readonly ILogger<UserService> _logger;
-        private readonly string _connectionString;
 
-        public UserService(ApplicationDbContext context, ILogger<UserService> logger, IConfiguration configuration)
+        public UserService(ApplicationDbContext context, ILogger<UserService> logger)
         {
             _context = context;
             _logger = logger;
-            _connectionString = configuration.GetConnectionString("AZURE_SQL_CONNECTIONSTRING");
         }
 
-        public async Task<User> CreateNewUser(string username, string email, string password)
+        public async Task<User> CreateNewUser(string? username, string? email, string password)
         {
             if (_context.Users.Any(u => u.Username == username || u.Email == email))
             {
@@ -52,39 +50,24 @@ namespace mypetpal.Services
             }).ToListAsync();
         }
 
-        public async Task<User> GetUserById(long userId)
+        public async Task<User?> GetUserById(long userId)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
 
-            if (user == null)
-            {
-                throw new KeyNotFoundException("User not found");
-            }
-
             return user;
         }
 
-        public async Task<User> GetUserByUsername(string username)
+        public async Task<User?> GetUserByUsername(string username)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
 
-            if (user == null)
-            {
-                throw new KeyNotFoundException("Username not found");
-            }
-
             return user;
         }
 
 
-        public async Task<User> GetUserByEmail(string email)
+        public async Task<User?> GetUserByEmail(string email)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
-
-            if (user == null)
-            {
-                throw new KeyNotFoundException("User with email not found");
-            }
 
             return user;
         }
