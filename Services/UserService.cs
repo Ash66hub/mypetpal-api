@@ -61,13 +61,32 @@ namespace mypetpal.Services
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
 
+<<<<<<< HEAD
+=======
+            if (user == null)
+            {
+                throw new KeyNotFoundException("Username not found");
+            }
+
+>>>>>>> 2b2ac58720c1c02938ff41a408133641c08e5c5f
             return user;
         }
 
 
+<<<<<<< HEAD
         public async Task<User?> GetUserByEmail(string email)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+=======
+        public async Task<User> GetUserByEmail(string email)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+
+            if (user == null)
+            {
+                throw new KeyNotFoundException("User with email not found");
+            }
+>>>>>>> 2b2ac58720c1c02938ff41a408133641c08e5c5f
 
             return user;
         }
