@@ -83,21 +83,13 @@ namespace mypetpal.Controllers
         {
             if(user.Username != null || user.Email !=null)
             {
-<<<<<<< HEAD
                 User? existingUser = null;
-=======
-                User existingUser;
->>>>>>> 2b2ac58720c1c02938ff41a408133641c08e5c5f
 
                 if(user.Email != null)
                 {
                     existingUser = await _userService.GetUserByEmail(user.Email);
                 }
-<<<<<<< HEAD
                 else if(user.Username != null)
-=======
-                else
->>>>>>> 2b2ac58720c1c02938ff41a408133641c08e5c5f
                 {
                     existingUser = await _userService.GetUserByUsername(user.Username);
                 }
