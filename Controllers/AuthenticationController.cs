@@ -43,7 +43,7 @@ namespace mypetpal.Controllers
                     await _userService.SaveRefreshToken(_user.UserId, refreshToken);
 
                     _logger.LogInformation("Authentication successful for user: {Username}", _user.Username);
-                    response = Ok(new { token, refreshToken });
+                    response = Ok(new { token, refreshToken, _user.UserId });
                 }
                 catch (Exception ex)
                 {
