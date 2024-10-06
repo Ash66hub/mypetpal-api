@@ -41,7 +41,7 @@ var connection = builder.Configuration.GetConnectionString("AZURE_SQL_CONNECTION
 
 // Register ApplicationDbContext with dependency injection
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connection));
+    options.UseSqlServer(connection, sqlOptions => sqlOptions.EnableRetryOnFailure()));
 
 // Add controllers for API
 builder.Services.AddControllers().AddJsonOptions(options =>
