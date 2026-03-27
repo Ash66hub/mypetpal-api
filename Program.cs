@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Pomelo.EntityFrameworkCore.MySql;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using mypetpal.dbContext;
@@ -7,14 +8,14 @@ using mypetpal.Services.Contracts;
 using System.Text;
 using Microsoft.OpenApi.Models;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.SignalR;
+using mypetpal.Hubs;
+using mypetpal.Models;
+using mypetpal.MinimalApiEndpoints;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add logging configuration
-builder.Logging.ClearProviders();
-builder.Logging.AddConsole();
-builder.Logging.AddDebug();
-builder.Logging.AddAzureWebAppDiagnostics();
 
 // Allow CORS for now. Later limit by appUrl
 builder.Services.AddCors(options =>
@@ -22,9 +23,10 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowAll",
         policy =>
         {
-            policy.AllowAnyOrigin()
-                  .AllowAnyHeader() 
-                  .AllowAnyMethod(); 
+            policy.AllowAnyHeader() 
+                  .AllowAnyMethod()
+                  .SetIsOriginAllowed(_ => true) // Required for SignalR with allow credentials
+                  .AllowCredentials(); 
         });
 });
 
@@ -37,17 +39,19 @@ if (builder.Environment.IsDevelopment())
 }
 
 // Add services to the container.
-var connection = builder.Configuration.GetConnectionString("AZURE_SQL_CONNECTIONSTRING");
+var connection = builder.Configuration.GetConnectionString("DefaultConnection");
 
 // Register ApplicationDbContext with dependency injection
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connection, sqlOptions => sqlOptions.EnableRetryOnFailure()));
+    options.UseMySql(connection, new MySqlServerVersion(new Version(8, 0, 0)), sqlOptions => sqlOptions.EnableRetryOnFailure()));
 
 // Add controllers for API
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
 });
+
+builder.Services.AddSignalR();
 
 // Add Swagger services
 builder.Services.AddEndpointsApiExplorer();
@@ -126,6 +130,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
+app.MapHub<SocialHub>("/socialHub");
+app.MapSocialEndpoints();
 
 app.Run();

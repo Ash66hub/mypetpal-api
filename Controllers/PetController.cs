@@ -37,11 +37,6 @@ namespace mypetpal.Controllers
         public async Task<IActionResult> GetAllPets([FromQuery] long userId)
         {
             var pets = await _petService.GetAllPetsAsync(userId);
-            if (!pets.Any())
-            {
-                return NotFound("No pets found for the user.");
-            }
-
             return Ok(pets);
         }
 

@@ -61,12 +61,18 @@ namespace mypetpal.Controllers
 
         [AllowAnonymous]
         [HttpPost("refreshToken")]
-        public async Task<IActionResult> Refresh(long userId, string refreshToken)
+        public async Task<IActionResult> Refresh([FromBody] RefreshRequest request)
         {
+            if (request == null || string.IsNullOrEmpty(request.RefreshToken))
+                return BadRequest("Invalid request.");
+
+            if (!long.TryParse(request.UserId, out var userId))
+                return BadRequest("Invalid userId.");
+
             // Validate refresh token and return new token pair
             var user = await _userService.GetUserById(userId);
 
-            if (user == null || user.RefreshToken != refreshToken)
+            if (user == null || user.RefreshToken != request.RefreshToken)
             {
                 return Unauthorized("Invalid refresh token or user");
             }
@@ -77,6 +83,12 @@ namespace mypetpal.Controllers
             await _userService.SaveRefreshToken(user.UserId, newRefreshToken);
 
             return Ok(new { token = newToken, refreshToken = newRefreshToken });
+        }
+        
+        public class RefreshRequest
+        {
+            public string UserId { get; set; } = string.Empty;
+            public string RefreshToken { get; set; } = string.Empty;
         }
 
         private async Task<User?> AuthenticateUser(User user)

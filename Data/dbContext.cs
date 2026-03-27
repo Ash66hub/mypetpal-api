@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using mypetpal.Models;
 
 namespace mypetpal.dbContext
@@ -12,10 +12,13 @@ namespace mypetpal.dbContext
         public DbSet<User> Users { get; set; }
         public DbSet<UserPet> UserPets { get; set; }
         public DbSet<PetAttributes> PetAttributes { get; set; }
+        public DbSet<Friendship> Friendships { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // Configure relationships and other model configurations here
+            modelBuilder.Entity<Friendship>()
+                  .HasKey(f => f.Id);
 
             modelBuilder.Entity<User>()
                   .HasKey(u => u.UserId);
