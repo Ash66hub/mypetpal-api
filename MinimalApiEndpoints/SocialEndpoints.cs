@@ -20,7 +20,7 @@ namespace mypetpal.MinimalApiEndpoints
                     .ToListAsync();
 
                 var friendIds = await db.Friendships
-                    .Where(f => f.UserId == currentUserId || f.FriendId == currentUserId)
+                    .Where(f => (f.UserId == currentUserId || f.FriendId == currentUserId) && f.Status == FriendshipStatus.Accepted)
                     .Select(f => f.UserId == currentUserId ? f.FriendId : f.UserId)
                     .ToListAsync();
 
@@ -29,12 +29,16 @@ namespace mypetpal.MinimalApiEndpoints
                     .Select(f => f.FriendId)
                     .ToListAsync();
 
-                return users.Select(u => new UserSearchResult {
-                    UserId = u.UserId,
-                    Username = u.Username!,
-                    IsFriend = friendIds.Contains(u.UserId),
-                    IsPending = pendingSent.Contains(u.UserId),
-                    IsOnline = SocialHub.IsUserOnline(u.UserId.ToString())
+                return users.Select(u => {
+                    var isFriend = friendIds.Contains(u.UserId);
+                    return new UserSearchResult {
+                        UserId = u.UserId,
+                        Username = u.Username!,
+                        IsFriend = isFriend,
+                        IsPending = pendingSent.Contains(u.UserId),
+                        // Only reveal online status to confirmed friends, not strangers/pending
+                        IsOnline = isFriend && SocialHub.IsUserOnline(u.UserId.ToString())
+                    };
                 });
             });
 

@@ -13,6 +13,8 @@ namespace mypetpal.dbContext
         public DbSet<UserPet> UserPets { get; set; }
         public DbSet<PetAttributes> PetAttributes { get; set; }
         public DbSet<Friendship> Friendships { get; set; }
+        public DbSet<DecorInstance> DecorInstances { get; set; }
+        public DbSet<UserSettings> UserSettings { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -44,6 +46,15 @@ namespace mypetpal.dbContext
             modelBuilder.Entity<PetAttributes>()
                 .HasKey(pa => pa.PetId);
 
+
+            modelBuilder.Entity<DecorInstance>()
+                .HasKey(d => d.Id);
+
+            modelBuilder.Entity<DecorInstance>()
+                .HasIndex(d => d.UserId);
+
+            modelBuilder.Entity<UserSettings>()
+                .HasKey(u => u.UserId);
 
             base.OnModelCreating(modelBuilder);
         }

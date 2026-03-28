@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using mypetpal.dbContext;
 
@@ -11,9 +12,11 @@ using mypetpal.dbContext;
 namespace mypetpal.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260328033336_AddDecorPersistence")]
+    partial class AddDecorPersistence
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -175,34 +178,6 @@ namespace mypetpal.Migrations
                     b.ToTable("UserPets");
                 });
 
-            modelBuilder.Entity("mypetpal.Models.UserSettings", b =>
-                {
-                    b.Property<long>("UserId")
-                        .HasColumnType("bigint");
-
-                    b.Property<bool>("IsMuted")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<float>("LastPetX")
-                        .HasColumnType("float");
-
-                    b.Property<float>("LastPetY")
-                        .HasColumnType("float");
-
-                    b.Property<float>("MusicVolume")
-                        .HasColumnType("float");
-
-                    b.Property<float>("SoundVolume")
-                        .HasColumnType("float");
-
-                    b.Property<float>("ZoomLevel")
-                        .HasColumnType("float");
-
-                    b.HasKey("UserId");
-
-                    b.ToTable("UserSettings");
-                });
-
             modelBuilder.Entity("mypetpal.Models.UserPet", b =>
                 {
                     b.HasOne("mypetpal.Models.PetAttributes", "PetAttributes")
@@ -218,17 +193,6 @@ namespace mypetpal.Migrations
                         .IsRequired();
 
                     b.Navigation("PetAttributes");
-                });
-
-            modelBuilder.Entity("mypetpal.Models.UserSettings", b =>
-                {
-                    b.HasOne("mypetpal.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
                 });
 #pragma warning restore 612, 618
         }

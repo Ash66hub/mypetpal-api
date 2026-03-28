@@ -91,6 +91,26 @@ namespace mypetpal.Controllers
             public string RefreshToken { get; set; } = string.Empty;
         }
 
+        [HttpPost("change-password")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
+        {
+            var user = await _userService.GetUserById(request.UserId);
+            if (user == null || !VerifyPassword(request.OldPassword, user.Password))
+                return BadRequest("Invalid credentials.");
+
+            await _userService.UpdateUser(request.UserId, user.Username, user.Email, request.NewPassword);
+            return Ok(new { message = "Password updated successfully." });
+        }
+
+        [HttpDelete("delete-account/{userId}")]
+        public async Task<IActionResult> DeleteAccount(long userId)
+        {
+            var success = await _userService.DeleteUser(userId);
+            if (!success) return NotFound("User not found.");
+
+            return Ok(new { message = "Account deleted successfully." });
+        }
+
         private async Task<User?> AuthenticateUser(User user)
         {
             if(user.Username != null || user.Email !=null)
