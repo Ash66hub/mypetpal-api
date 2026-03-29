@@ -40,6 +40,8 @@ namespace mypetpal.Services
             {
                 existing.LastPetX = settings.LastPetX;
                 existing.LastPetY = settings.LastPetY;
+                existing.LastCameraX = settings.LastCameraX;
+                existing.LastCameraY = settings.LastCameraY;
                 existing.ZoomLevel = settings.ZoomLevel;
                 existing.IsMuted = settings.IsMuted;
                 existing.MusicVolume = settings.MusicVolume;

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using mypetpal.dbContext;
 
@@ -11,9 +12,11 @@ using mypetpal.dbContext;
 namespace mypetpal.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260328102334_AddCameraSettings")]
+    partial class AddCameraSettings
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -207,31 +210,6 @@ namespace mypetpal.Migrations
                     b.HasKey("UserId");
 
                     b.ToTable("UserSettings");
-                });
-
-            modelBuilder.Entity("mypetpal.Models.VisitInvitation", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<long>("ReceiverId")
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("SenderId")
-                        .HasColumnType("bigint");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("VisitInvitations");
                 });
 
             modelBuilder.Entity("mypetpal.Models.UserPet", b =>

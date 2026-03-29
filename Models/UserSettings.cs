@@ -11,6 +11,9 @@ namespace mypetpal.Models
         public float LastPetX { get; set; } = 1000f; // Default to room center
         public float LastPetY { get; set; } = 1027f; // Default to room center + offset
 
+        public float LastCameraX { get; set; } = 1000f; // Default to room center
+        public float LastCameraY { get; set; } = 1000f; // Default to room center
+
         public float ZoomLevel { get; set; } = 5.0f; // Default zoom
 
         public bool IsMuted { get; set; } = false;

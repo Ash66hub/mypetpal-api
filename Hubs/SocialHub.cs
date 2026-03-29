@@ -6,6 +6,14 @@ namespace mypetpal.Hubs
 {
     public class SocialHub : Hub
     {
+        public class RoomDecorSyncItem
+        {
+            public string DecorId { get; set; } = string.Empty;
+            public float X { get; set; }
+            public float Y { get; set; }
+            public string Rotation { get; set; } = "SE";
+        }
+
         private readonly mypetpal.dbContext.ApplicationDbContext _db;
 
         public SocialHub(mypetpal.dbContext.ApplicationDbContext db)
@@ -52,6 +60,10 @@ namespace mypetpal.Hubs
             {
                 UserPresence.AddOrUpdate(userId, 0, (_, count) => Math.Max(0, count - 1));
                 
+                // Always notify all rooms the user might be in that they went offline/disconnected
+                // Since we don't track rooms per connection easily here, it's safer to just let the client handle it
+                // We'll broadcast a global UserStatusChanged offline event
+
                 if (!IsUserOnline(userId) && long.TryParse(userId, out var uid))
                 {
                     // Only broadcast to friends
@@ -76,6 +88,45 @@ namespace mypetpal.Hubs
         public async Task NotifyRequestAccepted(string targetUserId, string friendUsername)
         {
             await Clients.Group(targetUserId).SendAsync("FriendRequestAccepted", friendUsername);
+        }
+
+        public async Task JoinRoom(string roomOwnerId, string userId)
+        {
+            await Groups.AddToGroupAsync(Context.ConnectionId, $"room_{roomOwnerId}");
+            
+            // Notify everyone already in the room (especially the host) that a new user joined
+            await Clients.GroupExcept($"room_{roomOwnerId}", Context.ConnectionId)
+                .SendAsync("UserJoinedRoom", userId);
+        }
+
+        public async Task LeaveRoom(string roomOwnerId)
+        {
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"room_{roomOwnerId}");
+            if (ConnectionToUser.TryGetValue(Context.ConnectionId, out var userId))
+            {
+                await Clients.Group($"room_{roomOwnerId}").SendAsync("UserLeftRoom", userId);
+            }
+        }
+
+        public async Task SyncPetPosition(string roomOwnerId, double x, double y, string userId)
+        {
+            await Clients.Group($"room_{roomOwnerId}").SendAsync("PetPositionSynced", userId, x, y);
+        }
+
+        public async Task SendRoomMessage(string roomOwnerId, string message, string userId, string username)
+        {
+            await Clients.Group($"room_{roomOwnerId}").SendAsync("RoomMessageReceived", userId, username, message);
+        }
+
+        public async Task SyncRoomDecor(string roomOwnerId, string userId, List<RoomDecorSyncItem> instances)
+        {
+            await Clients.Group($"room_{roomOwnerId}").SendAsync("RoomDecorSynced", userId, instances);
+        }
+
+        public async Task KickUser(string roomOwnerId, string userIdToKick)
+        {
+            // Send directly to the target user's personal group
+            await Clients.Group(userIdToKick).SendAsync("KickedFromRoom", roomOwnerId);
         }
     }
 }

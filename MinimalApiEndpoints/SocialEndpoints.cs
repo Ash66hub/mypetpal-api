@@ -143,6 +143,62 @@ namespace mypetpal.MinimalApiEndpoints
                 await db.SaveChangesAsync();
                 return Results.Ok();
             });
+
+            // Send space visit invitation
+            social.MapPost("visit-invite", async (long senderId, long receiverId, ApplicationDbContext db, IHubContext<SocialHub> hubContext) => {
+                if (senderId == receiverId) return Results.BadRequest("Self-inviting is not allowed.");
+
+                var existing = await db.VisitInvitations.FirstOrDefaultAsync(v => 
+                    v.SenderId == senderId && v.ReceiverId == receiverId && v.Status == InvitationStatus.Pending);
+
+                if (existing != null) return Results.Conflict("A pending invitation already exists.");
+
+                var sender = await db.Users.FindAsync(senderId);
+                var invitation = new VisitInvitation { SenderId = senderId, ReceiverId = receiverId, Status = InvitationStatus.Pending };
+                db.VisitInvitations.Add(invitation);
+                await db.SaveChangesAsync();
+
+                // SignalR Notification
+                await hubContext.Clients.Group(receiverId.ToString()).SendAsync("ReceiveVisitInvite", sender?.Username);
+
+                return Results.Ok(invitation);
+            });
+
+            // Get pending visit invitations for a user
+            social.MapGet("visit-invites", async (long userId, ApplicationDbContext db) => {
+                var invites = await db.VisitInvitations
+                    .Where(v => v.ReceiverId == userId && v.Status == InvitationStatus.Pending)
+                    .ToListAsync();
+
+                var senderIds = invites.Select(v => v.SenderId).ToList();
+                var senders = await db.Users
+                    .Where(u => senderIds.Contains(u.UserId))
+                    .ToDictionaryAsync(u => u.UserId, u => u.Username);
+
+                return invites.Select(v => new {
+                    v.Id,
+                    v.SenderId,
+                    SenderUsername = senders.ContainsKey(v.SenderId) ? senders[v.SenderId] : "Unknown",
+                    v.CreatedAt
+                });
+            });
+
+            // Respond to visit invitation
+            social.MapPost("visit-respond", async (long inviteId, bool accept, ApplicationDbContext db, IHubContext<SocialHub> hubContext) => {
+                var invite = await db.VisitInvitations.FindAsync(inviteId);
+                if (invite == null) return Results.NotFound();
+
+                invite.Status = accept ? InvitationStatus.Accepted : InvitationStatus.Declined;
+                
+                if (accept) {
+                    var receiver = await db.Users.FindAsync(invite.ReceiverId);
+                    // Notify sender that invitation was accepted
+                    await hubContext.Clients.Group(invite.SenderId.ToString()).SendAsync("VisitInviteAccepted", receiver?.Username);
+                }
+
+                await db.SaveChangesAsync();
+                return Results.Ok();
+            });
         }
     }
 }
