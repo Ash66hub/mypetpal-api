@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.SignalR;
 using mypetpal.dbContext;
 using mypetpal.Hubs;
 using mypetpal.Models;
+using mypetpal.Services.Contracts;
 
 namespace mypetpal.MinimalApiEndpoints
 {
@@ -11,6 +12,7 @@ namespace mypetpal.MinimalApiEndpoints
         public static void MapSocialEndpoints(this IEndpointRouteBuilder app)
         {
             var social = app.MapGroup("social");
+            var onlineThreshold = TimeSpan.FromMinutes(1);
 
             // Search users
             social.MapGet("search", async (string query, long currentUserId, ApplicationDbContext db) => {
@@ -29,15 +31,17 @@ namespace mypetpal.MinimalApiEndpoints
                     .Select(f => f.FriendId)
                     .ToListAsync();
 
+                var now = DateTime.UtcNow;
                 return users.Select(u => {
                     var isFriend = friendIds.Contains(u.UserId);
+                    var isActive = u.LastActive >= now - onlineThreshold;
                     return new UserSearchResult {
                         UserId = u.UserId,
                         Username = u.Username!,
                         IsFriend = isFriend,
                         IsPending = pendingSent.Contains(u.UserId),
                         // Only reveal online status to confirmed friends, not strangers/pending
-                        IsOnline = isFriend && SocialHub.IsUserOnline(u.UserId.ToString())
+                        IsOnline = isFriend && isActive && SocialHub.IsUserConnected(u.UserId.ToString())
                     };
                 });
             });
@@ -77,14 +81,22 @@ namespace mypetpal.MinimalApiEndpoints
                     .Select(f => f.UserId == userId ? f.FriendId : f.UserId)
                     .ToListAsync();
 
-                return await db.Users
+                var now = DateTime.UtcNow;
+                var friends = await db.Users
                     .Where(u => friendIds.Contains(u.UserId))
                     .Select(u => new { 
                         u.UserId, 
                         u.Username,
-                        IsOnline = SocialHub.IsUserOnline(u.UserId.ToString())
+                        u.LastActive
                     })
                     .ToListAsync();
+
+                return friends.Select(u => new
+                {
+                    u.UserId,
+                    u.Username,
+                    IsOnline = u.LastActive >= now - onlineThreshold && SocialHub.IsUserConnected(u.UserId.ToString())
+                });
             });
 
             // Pending requests (incoming)
@@ -106,28 +118,17 @@ namespace mypetpal.MinimalApiEndpoints
             });
 
             // Respond to request
-            social.MapPost("respond", async (long requestId, bool accept, ApplicationDbContext db, IHubContext<SocialHub> hubContext) => {
-                var request = await db.Friendships.FindAsync(requestId);
-                if (request == null) return Results.NotFound();
+            social.MapPost("respond", async (long requestId, bool accept, IFriendshipService friendshipService, IHubContext<SocialHub> hubContext) => {
+                var result = await friendshipService.RespondToRequestAsync(requestId, accept);
+                if (result.IsNotFound) return Results.NotFound();
+                if (result.IsFriendLimitReached) return Results.BadRequest("One of the pet pals has reached the 25 limit.");
 
-                if (accept) {
-                    // Check Limit for both
-                    var countU = await db.Friendships.CountAsync(f => (f.UserId == request.UserId || f.FriendId == request.UserId) && f.Status == FriendshipStatus.Accepted);
-                    var countF = await db.Friendships.CountAsync(f => (f.UserId == request.FriendId || f.FriendId == request.FriendId) && f.Status == FriendshipStatus.Accepted);
-                    
-                    if (countU >= 25 || countF >= 25) return Results.BadRequest("One of the pet pals has reached the 25 limit.");
-
-                    request.Status = FriendshipStatus.Accepted;
-                    request.UpdatedAt = DateTime.UtcNow;
-                    
-                    var friend = await db.Users.FindAsync(request.FriendId);
+                if (result.IsAccepted)
+                {
                     // SignalR Notification to the person who SENT the request
-                    await hubContext.Clients.Group(request.UserId.ToString()).SendAsync("FriendRequestAccepted", friend?.Username);
-                } else {
-                    db.Friendships.Remove(request);
+                    await hubContext.Clients.Group(result.RequesterUserId.ToString()).SendAsync("FriendRequestAccepted", result.ReceiverUsername);
                 }
 
-                await db.SaveChangesAsync();
                 return Results.Ok();
             });
 

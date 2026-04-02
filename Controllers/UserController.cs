@@ -11,15 +11,17 @@ namespace mypetpal.Controllers
     public class UsersController : ControllerBase
     {
         private readonly IUserService _userService;
+        private readonly IExperienceService _experienceService;
 
-        public UsersController(IUserService userService)
+        public UsersController(IUserService userService, IExperienceService experienceService)
         {
             _userService = userService;
+            _experienceService = experienceService;
         }
 
         // POST: User (Create new user)
         [AllowAnonymous]
-        [HttpPost]
+        [HttpPost("signup")]
         public async Task<IActionResult> CreateUser([FromBody] User user)
         {
             try
@@ -90,6 +92,18 @@ namespace mypetpal.Controllers
             }
 
             return NoContent();
+        }
+
+        [HttpPost("activity")]
+        public async Task<IActionResult> UpdateActivity([FromQuery] long userId)
+        {
+            var updated = await _experienceService.TouchLastActiveAsync(userId);
+            if (!updated)
+            {
+                return NotFound();
+            }
+
+            return Ok();
         }
     }
 }

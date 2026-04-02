@@ -48,6 +48,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 // Add controllers for API
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
+    options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
 });
 
@@ -95,6 +96,9 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IPetService, PetService>();
 builder.Services.AddScoped<IDecorService, DecorService>();
 builder.Services.AddScoped<IUserSettingsService, UserSettingsService>();
+builder.Services.AddScoped<IExperienceService, ExperienceService>();
+builder.Services.AddScoped<IFriendshipService, FriendshipService>();
+builder.Services.AddHostedService<PlayerExperienceWorker>();
 
 // JWT Authorization
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -121,18 +125,19 @@ if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");     
 }
-app.UseCors("AllowAll");
 
 app.UseSwagger();
 app.UseSwaggerUI();
 
 app.UseRouting();
+app.UseCors("AllowAll");
 
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
 app.MapHub<SocialHub>("/socialHub");
+app.MapHub<GameHub>("/gameHub");
 app.MapSocialEndpoints();
 
 app.Run();

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.SignalR;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
+using Microsoft.EntityFrameworkCore;
 
 namespace mypetpal.Hubs
 {
@@ -26,7 +27,17 @@ namespace mypetpal.Hubs
         // Tracks which userId is associated with a connectionId for disconnection cleanup
         private static readonly ConcurrentDictionary<string, string> ConnectionToUser = new();
 
-        public static bool IsUserOnline(string userId) => UserPresence.TryGetValue(userId, out var count) && count > 0;
+        public static bool IsUserConnected(string userId) => UserPresence.TryGetValue(userId, out var count) && count > 0;
+
+        public static bool IsUserOnline(string userId) => IsUserConnected(userId);
+
+        public static IReadOnlyCollection<string> GetConnectedUserIds()
+        {
+            return UserPresence
+                .Where(kvp => kvp.Value > 0)
+                .Select(kvp => kvp.Key)
+                .ToArray();
+        }
 
         public async Task JoinUserGroup(string userId)
         {
@@ -38,6 +49,12 @@ namespace mypetpal.Hubs
 
             if (long.TryParse(userId, out var uid))
             {
+                var now = DateTime.UtcNow;
+                await _db.Users
+                    .Where(u => u.UserId == uid)
+                    .ExecuteUpdateAsync(setters => setters
+                        .SetProperty(u => u.LastActive, now));
+
                 // Only broadcast to friends
                 var friendIds = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync(
                     _db.Friendships
@@ -64,7 +81,7 @@ namespace mypetpal.Hubs
                 // Since we don't track rooms per connection easily here, it's safer to just let the client handle it
                 // We'll broadcast a global UserStatusChanged offline event
 
-                if (!IsUserOnline(userId) && long.TryParse(userId, out var uid))
+                if (!IsUserConnected(userId) && long.TryParse(userId, out var uid))
                 {
                     // Only broadcast to friends
                     var friendIds = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync(

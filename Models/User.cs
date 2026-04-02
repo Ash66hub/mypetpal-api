@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using mypetpal.Data.Common.Interface;
 using System.Text.Json.Serialization;
 using System.ComponentModel.DataAnnotations.Schema;
+using System;
 
 namespace mypetpal.Models
 {
@@ -24,6 +25,26 @@ namespace mypetpal.Models
         public string? Metadata { get; set; }
 
         public string? RefreshToken { get; set; }
+
+        public long TotalExperience { get; set; } = 0;
+
+        public DateTime LastActive { get; set; } = DateTime.UtcNow;
+
+        [NotMapped]
+        public int CurrentLevel => CalculateLevel(TotalExperience);
+
+        public static int CalculateLevel(long totalExperience)
+        {
+            if (totalExperience < 10)
+            {
+                return 0;
+            }
+
+            // Level n threshold uses triangular scaling: 10 * n * (n + 1) / 2
+            var normalized = totalExperience / 5.0;
+            var level = (int)Math.Floor((Math.Sqrt(1 + (4 * normalized)) - 1) / 2);
+            return Math.Max(0, level);
+        }
 
 
         public UserMetadata? GetUserMetadata()
