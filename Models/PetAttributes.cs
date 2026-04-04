@@ -33,6 +33,9 @@ namespace mypetpal.Models
         [MaxLength(250)]
         public string? PetAvatar { get; set; }
 
+        [NotMapped]
+        public PetSelection? Selection { get; set; }
+
         // Pet Stats
 
         public int Xp { get; set; }
@@ -61,11 +64,22 @@ namespace mypetpal.Models
 
     public class PetMetadata : IMetadata
     {
+        public string? SelectedPetAssetKey { get; set; }
+
+        public string? SelectedRoomKey { get; set; }
+
         public DateTime? Metadata_createdUtc { get; set; }
 
         public DateTime? Metadata_deletedUtc { get; set; }
 
         public DateTime? Metadata_updatedUtc { get; set; }
+    }
+
+    public class PetSelection
+    {
+        public string? PetAssetKey { get; set; }
+
+        public string? RoomKey { get; set; }
     }
 }
 

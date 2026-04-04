@@ -23,20 +23,33 @@ namespace mypetpal.Services
                 throw new Exception("User not found.");
             }
 
+            var selectedPetAssetKey = NormalizePetAssetKey(
+                petAttributes.Selection?.PetAssetKey ?? petAttributes.PetAvatar ?? petAttributes.PetType.ToString()
+            );
+            var selectedRoomKey = NormalizeRoomKey(petAttributes.Selection?.RoomKey);
+
             var newPet = new PetAttributes
             {
                 PetName = petAttributes.PetName,
-                PetType = petAttributes.PetType,
+                PetType = ParsePetType(selectedPetAssetKey),
                 PetLevel = 1,
                 Age = petAttributes.Age,
                 PetStatus = PetStatus.Neutral,
                 Health = 100,
                 Happiness = 50,
-                Xp = 0
+                Xp = 0,
+                PetAvatar = selectedPetAssetKey,
+                Selection = new PetSelection
+                {
+                    PetAssetKey = selectedPetAssetKey,
+                    RoomKey = selectedRoomKey
+                }
             };
 
             var petMetadata = new PetMetadata
             {
+                SelectedPetAssetKey = selectedPetAssetKey,
+                SelectedRoomKey = selectedRoomKey,
                 Metadata_createdUtc = DateTime.UtcNow,
                 Metadata_updatedUtc = DateTime.UtcNow
             };
@@ -57,21 +70,27 @@ namespace mypetpal.Services
             _context.UserPets.Add(userPet);
             await _context.SaveChangesAsync();
 
+            HydrateSelection(newPet);
             return newPet;
         }
 
         public async Task<List<PetAttributes>> GetAllPetsAsync(long userId)
         {
-            return await _context.UserPets
+            var pets = await _context.UserPets
                 .Where(up => up.UserId == userId)
                 .Include(up => up.PetAttributes)
                 .Select(up => up.PetAttributes)
                 .ToListAsync();
+
+            pets.ForEach(HydrateSelection);
+            return pets;
         }
 
         public async Task<PetAttributes?> GetPetByIdAsync(long petId)
         {
-            return await _context.PetAttributes.FindAsync(petId);
+            var pet = await _context.PetAttributes.FindAsync(petId);
+            HydrateSelection(pet);
+            return pet;
         }
 
         public async Task<PetAttributes?> UpdatePetAsync(long petId, PetAttributes updatedPet)
@@ -86,6 +105,21 @@ namespace mypetpal.Services
             {
                 pet.PetName = updatedPet.PetName;
             }
+
+            var selectedPetAssetKey = NormalizePetAssetKey(
+                updatedPet.Selection?.PetAssetKey ?? updatedPet.PetAvatar ?? pet.PetAvatar ?? pet.PetType.ToString()
+            );
+            var selectedRoomKey = NormalizeRoomKey(
+                updatedPet.Selection?.RoomKey ?? GetPetMetadata(pet)?.SelectedRoomKey
+            );
+
+            pet.PetType = ParsePetType(selectedPetAssetKey);
+            pet.PetAvatar = selectedPetAssetKey;
+            pet.Selection = new PetSelection
+            {
+                PetAssetKey = selectedPetAssetKey,
+                RoomKey = selectedRoomKey
+            };
 
             if (updatedPet.Age > 0)
             {
@@ -103,10 +137,13 @@ namespace mypetpal.Services
             pet.PetLevel = CalculatePetLevel(pet.Xp);
 
             var metadata = pet.GetPetMetadata() ?? new PetMetadata(); 
+            metadata.SelectedPetAssetKey = selectedPetAssetKey;
+            metadata.SelectedRoomKey = selectedRoomKey;
             metadata.Metadata_updatedUtc = DateTime.UtcNow;
             pet.SetPetMetadata(metadata);
 
             await _context.SaveChangesAsync();
+            HydrateSelection(pet);
             return pet;
         }
 
@@ -128,6 +165,62 @@ namespace mypetpal.Services
             await _context.SaveChangesAsync();
 
             return true;
+        }
+
+        private static PetMetadata? GetPetMetadata(PetAttributes? pet)
+        {
+            return pet?.GetPetMetadata();
+        }
+
+        private static void HydrateSelection(PetAttributes? pet)
+        {
+            if (pet == null)
+            {
+                return;
+            }
+
+            var metadata = pet.GetPetMetadata();
+            var selectedPetAssetKey = NormalizePetAssetKey(
+                metadata?.SelectedPetAssetKey ?? pet.PetAvatar ?? pet.PetType.ToString()
+            );
+            var selectedRoomKey = NormalizeRoomKey(metadata?.SelectedRoomKey);
+
+            pet.PetType = ParsePetType(selectedPetAssetKey);
+            pet.PetAvatar = selectedPetAssetKey;
+            pet.Selection = new PetSelection
+            {
+                PetAssetKey = selectedPetAssetKey,
+                RoomKey = selectedRoomKey
+            };
+        }
+
+        private static string NormalizePetAssetKey(string? petAssetKey)
+        {
+            return petAssetKey switch
+            {
+                nameof(PetTypes.GoldenRetriever_spritesheet) => nameof(PetTypes.GoldenRetriever_spritesheet),
+                nameof(PetTypes.Cat_spritesheet) => nameof(PetTypes.Cat_spritesheet),
+                _ => nameof(PetTypes.GoldenRetriever_spritesheet)
+            };
+        }
+
+        private static string NormalizeRoomKey(string? roomKey)
+        {
+            return roomKey switch
+            {
+                "room2" => "room2",
+                "room3" => "room3",
+                _ => "room1"
+            };
+        }
+
+        private static PetTypes ParsePetType(string? petAssetKey)
+        {
+            return petAssetKey switch
+            {
+                nameof(PetTypes.Cat_spritesheet) => PetTypes.Cat_spritesheet,
+                _ => PetTypes.GoldenRetriever_spritesheet
+            };
         }
 
         private static PetStatus GetPetStatusBasedOnHappiness(int happiness)

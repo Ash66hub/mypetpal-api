@@ -91,9 +91,15 @@ namespace mypetpal.Controllers
             public string RefreshToken { get; set; } = string.Empty;
         }
 
+        [Authorize]
         [HttpPost("change-password")]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
         {
+            if (!IsPasswordValid(request.NewPassword))
+            {
+                return BadRequest("Password must be at least 12 characters and include both letters and numbers.");
+            }
+
             var user = await _userService.GetUserById(request.UserId);
             if (user == null || !VerifyPassword(request.OldPassword, user.Password))
                 return BadRequest("Invalid credentials.");
@@ -102,6 +108,7 @@ namespace mypetpal.Controllers
             return Ok(new { message = "Password updated successfully." });
         }
 
+        [Authorize]
         [HttpDelete("delete-account/{userId}")]
         public async Task<IActionResult> DeleteAccount(long userId)
         {
@@ -138,6 +145,18 @@ namespace mypetpal.Controllers
         private static bool VerifyPassword(string inputPassword, string storedPassword)
         {
             return BCrypt.Net.BCrypt.Verify(inputPassword, storedPassword); 
+        }
+
+        private static bool IsPasswordValid(string? password)
+        {
+            if (string.IsNullOrWhiteSpace(password) || password.Length < 12)
+            {
+                return false;
+            }
+
+            var hasLetter = password.Any(char.IsLetter);
+            var hasDigit = password.Any(char.IsDigit);
+            return hasLetter && hasDigit;
         }
 
         private string GenerateToken()

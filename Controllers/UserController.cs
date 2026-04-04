@@ -24,6 +24,11 @@ namespace mypetpal.Controllers
         [HttpPost("signup")]
         public async Task<IActionResult> CreateUser([FromBody] User user)
         {
+            if (!IsPasswordValid(user.Password))
+            {
+                return BadRequest("Password must be at least 12 characters and include both letters and numbers.");
+            }
+
             try
             {
                 var createdUser = await _userService.CreateNewUser(user.Username, user.Email, user.Password);
@@ -33,6 +38,18 @@ namespace mypetpal.Controllers
             {
                 return Conflict(ex.Message); // Handle conflict if username or email already exists
             }
+        }
+
+        private static bool IsPasswordValid(string? password)
+        {
+            if (string.IsNullOrWhiteSpace(password) || password.Length < 12)
+            {
+                return false;
+            }
+
+            var hasLetter = password.Any(char.IsLetter);
+            var hasDigit = password.Any(char.IsDigit);
+            return hasLetter && hasDigit;
         }
 
         // GET: User 

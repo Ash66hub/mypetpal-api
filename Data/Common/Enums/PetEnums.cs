@@ -15,8 +15,8 @@ namespace mypetpal.Data.Common.Enums
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public enum PetTypes
         {
-            Dogo,
-            Cato
+            GoldenRetriever_spritesheet,
+            Cat_spritesheet
         }
     }
 }

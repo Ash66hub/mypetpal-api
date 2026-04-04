@@ -37,13 +37,13 @@ namespace mypetpal.Models
         {
             if (totalExperience < 10)
             {
-                return 0;
+                return 1;
             }
 
             // Level n threshold uses triangular scaling: 10 * n * (n + 1) / 2
             var normalized = totalExperience / 5.0;
             var level = (int)Math.Floor((Math.Sqrt(1 + (4 * normalized)) - 1) / 2);
-            return Math.Max(0, level);
+            return Math.Max(1, level + 1);
         }
 
 
