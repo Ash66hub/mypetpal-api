@@ -53,6 +53,40 @@ namespace mypetpal.Services
             }).ToListAsync();
         }
 
+        public async Task<IEnumerable<LeaderboardEntry>> GetLeaderboard(int top = 10)
+        {
+            var safeTop = Math.Clamp(top, 1, 50);
+
+            var users = await _context.Users
+                .AsNoTracking()
+                .Where(u => !string.IsNullOrWhiteSpace(u.Username))
+                .OrderByDescending(u => u.TotalExperience)
+                .ThenBy(u => u.Username)
+                .Take(safeTop)
+                .Select(u => new
+                {
+                    u.UserId,
+                    u.PublicId,
+                    u.Username,
+                    u.TotalExperience
+                })
+                .ToListAsync();
+
+            return users
+                .Select(u => new LeaderboardEntry
+                {
+                    UserId = u.UserId,
+                    PublicId = u.PublicId,
+                    Username = u.Username ?? "Unknown",
+                    Experience = u.TotalExperience,
+                    Level = User.CalculateLevel(u.TotalExperience)
+                })
+                .OrderByDescending(entry => entry.Level)
+                .ThenByDescending(entry => entry.Experience)
+                .ThenBy(entry => entry.Username)
+                .ToList();
+        }
+
         public async Task<User?> GetUserById(long userId)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId == userId);

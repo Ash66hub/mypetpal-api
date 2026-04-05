@@ -60,6 +60,13 @@ namespace mypetpal.Controllers
             return Ok(users);
         }
 
+        [HttpGet("leaderboard")]
+        public async Task<IActionResult> GetLeaderboard([FromQuery] int top = 10)
+        {
+            var leaderboard = await _userService.GetLeaderboard(top);
+            return Ok(leaderboard);
+        }
+
         // GET: User/{userId}
         [HttpGet("{userId}")]
         public async Task<IActionResult> GetUserById(long userId)

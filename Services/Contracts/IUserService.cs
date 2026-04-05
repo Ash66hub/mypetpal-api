@@ -8,6 +8,8 @@ namespace mypetpal.Services.Contracts
 
         Task<IEnumerable<User>> GetAllUsers();
 
+        Task<IEnumerable<LeaderboardEntry>> GetLeaderboard(int top = 10);
+
         Task<User?> GetUserById(long userId);
 
         Task<User?> GetUserByPublicId(string publicId);
