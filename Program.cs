@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using Pomelo.EntityFrameworkCore.MySql;
+using Npgsql.EntityFrameworkCore.PostgreSQL;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using mypetpal.dbContext;
@@ -43,7 +43,7 @@ var connection = builder.Configuration.GetConnectionString("DefaultConnection");
 
 // Register ApplicationDbContext with dependency injection
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseMySql(connection, new MySqlServerVersion(new Version(8, 0, 0)), sqlOptions => sqlOptions.EnableRetryOnFailure()));
+    options.UseNpgsql(connection));
 
 // Add controllers for API
 builder.Services.AddControllers().AddJsonOptions(options =>
@@ -135,7 +135,17 @@ app.MapHub<SocialHub>("/socialHub");
 app.MapHub<GameHub>("/gameHub");
 app.MapSocialEndpoints();
 
-// Health check
+// Health check.
 app.MapGet("/health", () => Results.Ok("Healthy"));
+
+// DB migration.
+if (app.Environment.IsProduction()) 
+{
+    using (var scope = app.Services.CreateScope())
+    {
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        db.Database.Migrate();
+    }
+}
 
 app.Run();

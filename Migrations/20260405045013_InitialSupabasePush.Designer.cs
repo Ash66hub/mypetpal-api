@@ -2,9 +2,9 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using mypetpal.dbContext;
 
 #nullable disable
@@ -12,18 +12,18 @@ using mypetpal.dbContext;
 namespace mypetpal.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260328063846_AddUserSettings")]
-    partial class AddUserSettings
+    [Migration("20260405045013_InitialSupabasePush")]
+    partial class InitialSupabasePush
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.0")
-                .HasAnnotation("Relational:MaxIdentifierLength", 64);
+                .HasAnnotation("ProductVersion", "10.0.4")
+                .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
-            MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
+            NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("mypetpal.Models.DecorInstance", b =>
                 {
@@ -31,24 +31,24 @@ namespace mypetpal.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<string>("DecorId")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasColumnType("text");
 
                     b.Property<string>("Rotation")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasColumnType("text");
 
                     b.Property<long>("UserId")
                         .HasColumnType("bigint");
 
                     b.Property<float>("X")
-                        .HasColumnType("float");
+                        .HasColumnType("real");
 
                     b.Property<float>("Y")
-                        .HasColumnType("float");
+                        .HasColumnType("real");
 
                     b.HasKey("Id");
 
@@ -63,19 +63,19 @@ namespace mypetpal.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime(6)");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<long>("FriendId")
                         .HasColumnType("bigint");
 
                     b.Property<int>("Status")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime(6)");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<long>("UserId")
                         .HasColumnType("bigint");
@@ -91,41 +91,41 @@ namespace mypetpal.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("PetId"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("PetId"));
 
                     b.Property<int?>("Age")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<int>("Happiness")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<int>("Health")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<string>("Metadata")
                         .HasMaxLength(1000)
-                        .HasColumnType("varchar(1000)");
+                        .HasColumnType("character varying(1000)");
 
                     b.Property<string>("PetAvatar")
                         .HasMaxLength(250)
-                        .HasColumnType("varchar(250)");
+                        .HasColumnType("character varying(250)");
 
                     b.Property<int?>("PetLevel")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<string>("PetName")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("varchar(50)");
+                        .HasColumnType("character varying(50)");
 
                     b.Property<int?>("PetStatus")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<int>("PetType")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<int>("Xp")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.HasKey("PetId");
 
@@ -138,25 +138,31 @@ namespace mypetpal.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("UserId"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("UserId"));
 
                     b.Property<string>("Email")
                         .HasMaxLength(100)
-                        .HasColumnType("varchar(100)");
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime>("LastActive")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Metadata")
-                        .HasColumnType("longtext");
+                        .HasColumnType("text");
 
                     b.Property<string>("Password")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasColumnType("text");
 
                     b.Property<string>("RefreshToken")
-                        .HasColumnType("longtext");
+                        .HasColumnType("text");
+
+                    b.Property<long>("TotalExperience")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("Username")
                         .HasMaxLength(50)
-                        .HasColumnType("varchar(50)");
+                        .HasColumnType("character varying(50)");
 
                     b.HasKey("UserId");
 
@@ -184,26 +190,57 @@ namespace mypetpal.Migrations
                         .HasColumnType("bigint");
 
                     b.Property<bool>("IsMuted")
-                        .HasColumnType("tinyint(1)");
+                        .HasColumnType("boolean");
+
+                    b.Property<float>("LastCameraX")
+                        .HasColumnType("real");
+
+                    b.Property<float>("LastCameraY")
+                        .HasColumnType("real");
 
                     b.Property<float>("LastPetX")
-                        .HasColumnType("float");
+                        .HasColumnType("real");
 
                     b.Property<float>("LastPetY")
-                        .HasColumnType("float");
+                        .HasColumnType("real");
 
                     b.Property<float>("MusicVolume")
-                        .HasColumnType("float");
+                        .HasColumnType("real");
 
                     b.Property<float>("SoundVolume")
-                        .HasColumnType("float");
+                        .HasColumnType("real");
 
                     b.Property<float>("ZoomLevel")
-                        .HasColumnType("float");
+                        .HasColumnType("real");
 
                     b.HasKey("UserId");
 
                     b.ToTable("UserSettings");
+                });
+
+            modelBuilder.Entity("mypetpal.Models.VisitInvitation", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("ReceiverId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("SenderId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("VisitInvitations");
                 });
 
             modelBuilder.Entity("mypetpal.Models.UserPet", b =>
