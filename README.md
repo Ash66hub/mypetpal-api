@@ -2,6 +2,9 @@
 
 Backend API for the MyPetPal project (ASP.NET Core).
 
+## Status
+[![MyPetPal-API Status Check](https://github.com/Ash66hub/mypetpal-api/actions/workflows/keep-awake.yml/badge.svg)](https://github.com/Ash66hub/mypetpal-api/actions/workflows/keep-awake.yml)
+
 ## Disclaimer
 
 This README.md was generated with AI assistance.
