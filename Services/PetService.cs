@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using mypetpal.Data.Common;
 using mypetpal.dbContext;
 using mypetpal.Models;
 using mypetpal.Services.Contracts;
@@ -30,6 +31,7 @@ namespace mypetpal.Services
 
             var newPet = new PetAttributes
             {
+                PublicId = await GenerateUniquePetPublicIdAsync(),
                 PetName = petAttributes.PetName,
                 PetType = ParsePetType(selectedPetAssetKey),
                 PetLevel = 1,
@@ -89,6 +91,14 @@ namespace mypetpal.Services
         public async Task<PetAttributes?> GetPetByIdAsync(long petId)
         {
             var pet = await _context.PetAttributes.FindAsync(petId);
+            HydrateSelection(pet);
+            return pet;
+        }
+
+        public async Task<PetAttributes?> GetPetByPublicIdAsync(string petPublicId)
+        {
+            var pet = await _context.PetAttributes
+                .FirstOrDefaultAsync(p => p.PublicId == petPublicId);
             HydrateSelection(pet);
             return pet;
         }
@@ -249,6 +259,18 @@ namespace mypetpal.Services
             }
 
             return (int)Math.Floor(Math.Log(xp / baseXp, 2)) + 2;
+        }
+
+        private async Task<string> GenerateUniquePetPublicIdAsync()
+        {
+            string id;
+            do
+            {
+                id = PublicIdGenerator.NewId();
+            }
+            while (await _context.PetAttributes.AnyAsync(p => p.PublicId == id));
+
+            return id;
         }
     }
 }

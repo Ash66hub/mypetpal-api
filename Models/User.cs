@@ -13,6 +13,9 @@ namespace mypetpal.Models
         public long UserId { get; set; }
 
         [MaxLength(50)]
+        public string? PublicId { get; set; }
+
+        [MaxLength(50)]
         public string? Username { get; set; } 
 
         [MaxLength(100)]
@@ -23,6 +26,12 @@ namespace mypetpal.Models
 
         [JsonIgnore]
         public string? Metadata { get; set; }
+
+        [NotMapped]
+        public string? AuthProvider { get; set; }
+
+        [NotMapped]
+        public bool HasLocalPassword { get; set; } = true;
 
         public string? RefreshToken { get; set; }
 
@@ -74,6 +83,8 @@ namespace mypetpal.Models
         public string? Provider { get; set; } // Social media login provider. Create enum for this if needed [Gmail,Meta,etc]
 
         public string? ProviderUserId { get; set; }
+
+        public bool? HasLocalPassword { get; set; }
 
         public DateTime? LastLogin { get; set; }
 

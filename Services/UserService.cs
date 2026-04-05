@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using mypetpal.Data.Common;
 using mypetpal.Services.Contracts;
 using mypetpal.Models;
 using mypetpal.dbContext;
@@ -25,9 +26,11 @@ namespace mypetpal.Services
 
             var userMetadata = new UserMetadata();
             userMetadata.Metadata_createdUtc = DateTime.Now;
+            userMetadata.HasLocalPassword = true;
 
             var user = new User
             {
+                PublicId = await GenerateUniqueUserPublicIdAsync(),
                 Username = username,
                 Email = email,
                 Password = BCrypt.Net.BCrypt.HashPassword(password),
@@ -53,14 +56,21 @@ namespace mypetpal.Services
         public async Task<User?> GetUserById(long userId)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+            PopulateAuthProviderFields(user);
+            return user;
+        }
 
+        public async Task<User?> GetUserByPublicId(string publicId)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.PublicId == publicId);
+            PopulateAuthProviderFields(user);
             return user;
         }
 
         public async Task<User?> GetUserByUsername(string username)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
-
+            PopulateAuthProviderFields(user);
             return user;
         }
 
@@ -68,7 +78,7 @@ namespace mypetpal.Services
         public async Task<User?> GetUserByEmail(string email)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
-
+            PopulateAuthProviderFields(user);
             return user;
         }
 
@@ -125,6 +135,44 @@ namespace mypetpal.Services
                 _context.Users.Update(user);
                 await _context.SaveChangesAsync();
             }
+        }
+
+        public async Task UpdateUserMetadata(long userId, UserMetadata metadata)
+        {
+            var user = await _context.Users.SingleOrDefaultAsync(u => u.UserId == userId);
+            if (user == null)
+            {
+                return;
+            }
+
+            user.SetUserMetadata(metadata);
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+        }
+
+        private async Task<string> GenerateUniqueUserPublicIdAsync()
+        {
+            string id;
+            do
+            {
+                id = PublicIdGenerator.NewId();
+            }
+            while (await _context.Users.AnyAsync(u => u.PublicId == id));
+
+            return id;
+        }
+
+        private static void PopulateAuthProviderFields(User? user)
+        {
+            if (user == null)
+            {
+                return;
+            }
+
+            var metadata = user.GetUserMetadata();
+            user.AuthProvider = metadata?.Provider;
+            user.HasLocalPassword = metadata?.HasLocalPassword
+                ?? !string.Equals(metadata?.Provider, "Google", StringComparison.OrdinalIgnoreCase);
         }
     }
 }

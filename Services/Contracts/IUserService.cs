@@ -10,6 +10,8 @@ namespace mypetpal.Services.Contracts
 
         Task<User?> GetUserById(long userId);
 
+        Task<User?> GetUserByPublicId(string publicId);
+
         Task<User?> GetUserByUsername(string username);
 
         Task<User?> GetUserByEmail(string email);
@@ -19,5 +21,7 @@ namespace mypetpal.Services.Contracts
         Task<bool> DeleteUser(long userId);
 
         Task SaveRefreshToken(long userId, string refreshToken);
+
+        Task UpdateUserMetadata(long userId, UserMetadata metadata);
     }
 }

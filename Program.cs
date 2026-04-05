@@ -31,12 +31,13 @@ builder.Services.AddCors(options =>
 });
 
 // Load configuration based on the environment before building the app.
-builder.Configuration.AddEnvironmentVariables();
-
-if (builder.Environment.IsDevelopment())
-{
-    builder.Configuration.AddJsonFile("appsettings.Development.json", optional: false, reloadOnChange: true);
-}
+builder.Configuration
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile(
+        $"appsettings.{builder.Environment.EnvironmentName}.json",
+        optional: true,
+        reloadOnChange: true)
+    .AddEnvironmentVariables();
 
 // Add services to the container.
 var connection = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -99,6 +100,7 @@ builder.Services.AddScoped<IUserSettingsService, UserSettingsService>();
 builder.Services.AddScoped<IExperienceService, ExperienceService>();
 builder.Services.AddScoped<IFriendshipService, FriendshipService>();
 builder.Services.AddHostedService<PlayerExperienceWorker>();
+builder.Services.AddHttpClient();
 
 // JWT Authorization
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

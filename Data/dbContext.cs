@@ -26,6 +26,10 @@ namespace mypetpal.dbContext
             modelBuilder.Entity<User>()
                   .HasKey(u => u.UserId);
 
+            modelBuilder.Entity<User>()
+                .HasIndex(u => u.PublicId)
+                .IsUnique();
+
             modelBuilder.Entity<UserPet>()
                .HasOne(up => up.PetAttributes)
                .WithOne()
@@ -46,6 +50,10 @@ namespace mypetpal.dbContext
 
             modelBuilder.Entity<PetAttributes>()
                 .HasKey(pa => pa.PetId);
+
+            modelBuilder.Entity<PetAttributes>()
+                .HasIndex(pa => pa.PublicId)
+                .IsUnique();
 
 
             modelBuilder.Entity<DecorInstance>()

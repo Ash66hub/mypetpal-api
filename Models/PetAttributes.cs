@@ -12,6 +12,9 @@ namespace mypetpal.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long PetId { get; set; }
 
+        [MaxLength(50)]
+        public string? PublicId { get; set; }
+
         [Required]
         [MaxLength(50)]
         public string? PetName { get; set; }
