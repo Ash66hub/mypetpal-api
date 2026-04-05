@@ -36,3 +36,21 @@ For the full app to work end-to-end, build and run this API first, then build/ru
    dotnet build
 3. Run:
    dotnet run
+
+## Local environment setup
+
+This repo ignores local app settings files that can contain secrets or machine-specific values.
+
+1. Copy `appsettings.Development.example.json` to `appsettings.Development.json`.
+2. Update local values (for example, connection string and secrets) in your copied file.
+
+Tracked template:
+
+- `appsettings.Development.example.json`
+
+Ignored local files:
+
+- `appsettings.Development.json`
+- `appsettings.Local.json`
+- `appsettings.*.local.json`
+- `secrets.json`

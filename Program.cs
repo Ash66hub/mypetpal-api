@@ -121,11 +121,6 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-if (!app.Environment.IsDevelopment())
-{
-    app.UseExceptionHandler("/Error");     
-}
-
 app.UseSwagger();
 app.UseSwaggerUI();
 
@@ -139,5 +134,8 @@ app.MapControllers();
 app.MapHub<SocialHub>("/socialHub");
 app.MapHub<GameHub>("/gameHub");
 app.MapSocialEndpoints();
+
+// Health check
+app.MapGet("/health", () => Results.Ok("Healthy"));
 
 app.Run();
