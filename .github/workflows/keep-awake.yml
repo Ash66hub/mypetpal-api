@@ -1,0 +1,22 @@
+name: Keep API Awake
+on:
+  schedule:
+    - cron: "*/12 * * * *" # Every 12 minutes
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Health Endpoint
+        run: |
+          response=$(curl -s https://api-mypetpal.aswanth.net/health)
+          if [[ "$response" == *"Healthy"* ]]; then
+            echo "✓ API is healthy: $response"
+          else
+            echo "✗ API health check failed. Response: $response"
+            exit 1
+          fi
+      - name: Alert on Failure
+        if: failure()
+        run: |
+          echo "API health check failed. Manual intervention may be needed."
+          echo "API URL: https://api-mypetpal.aswanth.net/health"
