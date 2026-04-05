@@ -1,4 +1,4 @@
-name: Keep API Awake
+name: MyPetPal-API Status Check
 on:
   schedule:
     - cron: "*/12 * * * *" # Every 12 minutes
