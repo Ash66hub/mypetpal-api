@@ -19,6 +19,8 @@ namespace mypetpal.Models
         public bool IsMuted { get; set; } = false;
         public float MusicVolume { get; set; } = 0.5f;
         public float SoundVolume { get; set; } = 0.5f;
+        public bool MusicEnabled { get; set; } = false;
+        public bool NeighborhoodPanelCollapsed { get; set; } = false;
 
         [ForeignKey("UserId")]
         public virtual User? User { get; set; }

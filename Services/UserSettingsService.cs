@@ -46,6 +46,8 @@ namespace mypetpal.Services
                 existing.IsMuted = settings.IsMuted;
                 existing.MusicVolume = settings.MusicVolume;
                 existing.SoundVolume = settings.SoundVolume;
+                existing.MusicEnabled = settings.MusicEnabled;
+                existing.NeighborhoodPanelCollapsed = settings.NeighborhoodPanelCollapsed;
             }
             
             await _context.SaveChangesAsync();
