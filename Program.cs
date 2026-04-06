@@ -141,8 +141,8 @@ app.MapHub<SocialHub>("/socialHub");
 app.MapHub<GameHub>("/gameHub");
 app.MapSocialEndpoints();
 
-// Health check.
-app.MapGet("/health", () => Results.Ok("Healthy"));
+// This allows both standard browser (GET) and pings (HEAD)
+app.MapMethods("/health", new[] { "GET", "HEAD" }, () => Results.Ok("Healthy"));
 
 // DB migration.
 if (app.Environment.IsProduction()) 
