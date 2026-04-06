@@ -36,7 +36,7 @@ namespace mypetpal.Services
 
             var user = new User
             {
-                PublicId = await GenerateUniqueUserPublicIdAsync(),
+                Id = await GenerateUniqueUserIdAsync(),
                 Username = username,
                 Email = email,
                 Password = BCrypt.Net.BCrypt.HashPassword(password),
@@ -89,7 +89,7 @@ namespace mypetpal.Services
                 leaderboard.Add(new LeaderboardEntry
                 {
                     UserId = user.UserId,
-                    PublicId = user.PublicId,
+                    Id = user.Id,
                     Username = user.Username ?? "Unknown",
                     ProfilePictureUrl = signedAvatarUrl,
                     Experience = user.TotalExperience,
@@ -111,9 +111,9 @@ namespace mypetpal.Services
             return user;
         }
 
-        public async Task<User?> GetUserByPublicId(string publicId)
+        public async Task<User?> GetUserById(string id)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.PublicId == publicId);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
             await PopulateTransientUserFieldsAsync(user);
             return user;
         }
@@ -238,14 +238,14 @@ namespace mypetpal.Services
             await _context.SaveChangesAsync();
         }
 
-        private async Task<string> GenerateUniqueUserPublicIdAsync()
+        private async Task<string> GenerateUniqueUserIdAsync()
         {
             string id;
             do
             {
-                id = PublicIdGenerator.NewId();
+                id = IdGenerator.NewId();
             }
-            while (await _context.Users.AnyAsync(u => u.PublicId == id));
+            while (await _context.Users.AnyAsync(u => u.Id == id));
 
             return id;
         }

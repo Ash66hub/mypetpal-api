@@ -54,6 +54,7 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 });
 
 builder.Services.AddSignalR();
+builder.Services.AddMemoryCache();
 
 // Add Swagger services
 builder.Services.AddEndpointsApiExplorer();
@@ -94,6 +95,8 @@ builder.Services.AddSwaggerGen(c =>
 
 // Register Services so that they can be injected as needed
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IEmailService, SmtpEmailService>();
+builder.Services.AddSingleton<IPasswordResetCodeStore, PasswordResetCodeStore>();
 builder.Services.AddScoped<IProfilePictureStorageService, ProfilePictureStorageService>();
 builder.Services.AddScoped<IPetService, PetService>();
 builder.Services.AddScoped<IDecorService, DecorService>();

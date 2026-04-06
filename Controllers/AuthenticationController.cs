@@ -19,17 +19,23 @@ namespace mypetpal.Controllers
     {
         private readonly IConfiguration _config;
         private readonly IUserService _userService;
+        private readonly IEmailService _emailService;
+        private readonly IPasswordResetCodeStore _passwordResetCodeStore;
         private readonly ILogger<AuthenticationController> _logger;
         private readonly IHttpClientFactory _httpClientFactory;
 
         public AuthenticationController(
             IConfiguration configuration,
             IUserService userService,
+            IEmailService emailService,
+            IPasswordResetCodeStore passwordResetCodeStore,
             ILogger<AuthenticationController> logger,
             IHttpClientFactory httpClientFactory)
         {
             _config = configuration;
             _userService = userService;
+            _emailService = emailService;
+            _passwordResetCodeStore = passwordResetCodeStore;
             _logger = logger;
             _httpClientFactory = httpClientFactory;
         }
@@ -52,7 +58,7 @@ namespace mypetpal.Controllers
                     await _userService.SaveRefreshToken(_user.UserId, refreshToken);
 
                     _logger.LogInformation("Authentication successful for user: {Username}", _user.Username);
-                    response = Ok(new { token, refreshToken, _user.UserId, userPublicId = _user.PublicId });
+                    response = Ok(new { token, refreshToken, userId = _user.UserId, id = _user.Id });
                 }
                 catch (Exception ex)
                 {
@@ -144,7 +150,7 @@ namespace mypetpal.Controllers
             var refreshToken = GenerateRefreshToken();
             await _userService.SaveRefreshToken(user.UserId, refreshToken);
 
-            return Ok(new { token, refreshToken, user.UserId, userPublicId = user.PublicId });
+            return Ok(new { token, refreshToken, userId = user.UserId, id = user.Id });
         }
         
         public class RefreshRequest
@@ -237,6 +243,81 @@ namespace mypetpal.Controllers
             if (!success) return NotFound("User not found.");
 
             return Ok(new { message = "Account deleted successfully." });
+        }
+
+        [AllowAnonymous]
+        [HttpPost("forgot-password/request")]
+        public async Task<IActionResult> RequestPasswordResetCode([FromBody] ForgotPasswordRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.Email))
+            {
+                return BadRequest("Email is required.");
+            }
+
+            var email = request.Email.Trim();
+            var user = await _userService.GetUserByEmail(email);
+
+            if (user == null)
+            {
+                // Always return success to avoid leaking account existence.
+                return Ok(new
+                {
+                    message = "If an account exists for this email, a reset code has been sent."
+                });
+            }
+
+            var code = GeneratePasswordResetCode();
+            await _passwordResetCodeStore.StoreCodeAsync(email, code, TimeSpan.FromMinutes(15));
+
+            var emailSent = await _emailService.SendPasswordResetCodeAsync(email, code);
+            if (!emailSent)
+            {
+                return StatusCode(500, "Unable to send reset email right now. Please try again.");
+            }
+
+            return Ok(new
+            {
+                message = "If an account exists for this email, a reset code has been sent."
+            });
+        }
+
+        [AllowAnonymous]
+        [HttpPost("forgot-password/reset")]
+        public async Task<IActionResult> ResetPasswordWithCode([FromBody] ResetPasswordWithCodeRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Code))
+            {
+                return BadRequest("Email and reset code are required.");
+            }
+
+            if (!IsPasswordValid(request.NewPassword))
+            {
+                return BadRequest("Password must be at least 12 characters and include both letters and numbers.");
+            }
+
+            var email = request.Email.Trim();
+            var code = request.Code.Trim();
+
+            var user = await _userService.GetUserByEmail(email);
+            if (user == null || !_passwordResetCodeStore.VerifyCode(email, code))
+            {
+                return BadRequest("Invalid or expired reset code.");
+            }
+
+            await _userService.UpdateUser(
+                user.UserId,
+                user.Username ?? string.Empty,
+                user.Email ?? string.Empty,
+                request.NewPassword);
+
+            var metadata = user.GetUserMetadata() ?? new UserMetadata();
+            metadata.HasLocalPassword = true;
+            metadata.Metadata_updatedUtc = DateTime.UtcNow;
+            await _userService.UpdateUserMetadata(user.UserId, metadata);
+
+            _passwordResetCodeStore.RemoveCode(email);
+
+            return Ok(new { message = "Password reset successful." });
         }
 
         private async Task<User?> AuthenticateUser(User user)
@@ -402,6 +483,11 @@ namespace mypetpal.Controllers
         private static string GenerateRandomPassword()
         {
             return Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
+        }
+
+        private static string GeneratePasswordResetCode()
+        {
+            return RandomNumberGenerator.GetInt32(100000, 1000000).ToString();
         }
 
         public class SupabaseUserResponse

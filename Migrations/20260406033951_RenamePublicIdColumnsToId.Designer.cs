@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using mypetpal.dbContext;
@@ -11,9 +12,11 @@ using mypetpal.dbContext;
 namespace mypetpal.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260406033951_RenamePublicIdColumnsToId")]
+    partial class RenamePublicIdColumnsToId
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -51,7 +54,7 @@ namespace mypetpal.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("DecorInstances", (string)null);
+                    b.ToTable("DecorInstances");
                 });
 
             modelBuilder.Entity("mypetpal.Models.Friendship", b =>
@@ -79,7 +82,7 @@ namespace mypetpal.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Friendships", (string)null);
+                    b.ToTable("Friendships");
                 });
 
             modelBuilder.Entity("mypetpal.Models.PetAttributes", b =>
@@ -133,7 +136,7 @@ namespace mypetpal.Migrations
                     b.HasIndex("Id")
                         .IsUnique();
 
-                    b.ToTable("PetAttributes", (string)null);
+                    b.ToTable("PetAttributes");
                 });
 
             modelBuilder.Entity("mypetpal.Models.User", b =>
@@ -177,7 +180,7 @@ namespace mypetpal.Migrations
                     b.HasIndex("Id")
                         .IsUnique();
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("mypetpal.Models.UserPet", b =>
@@ -192,7 +195,7 @@ namespace mypetpal.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserPets", (string)null);
+                    b.ToTable("UserPets");
                 });
 
             modelBuilder.Entity("mypetpal.Models.UserSettings", b =>
@@ -226,7 +229,7 @@ namespace mypetpal.Migrations
 
                     b.HasKey("UserId");
 
-                    b.ToTable("UserSettings", (string)null);
+                    b.ToTable("UserSettings");
                 });
 
             modelBuilder.Entity("mypetpal.Models.VisitInvitation", b =>
@@ -251,7 +254,7 @@ namespace mypetpal.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("VisitInvitations", (string)null);
+                    b.ToTable("VisitInvitations");
                 });
 
             modelBuilder.Entity("mypetpal.Models.UserPet", b =>

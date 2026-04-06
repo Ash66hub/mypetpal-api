@@ -27,7 +27,7 @@ namespace mypetpal.dbContext
                   .HasKey(u => u.UserId);
 
             modelBuilder.Entity<User>()
-                .HasIndex(u => u.PublicId)
+                .HasIndex(u => u.Id)
                 .IsUnique();
 
             modelBuilder.Entity<UserPet>()
@@ -52,7 +52,7 @@ namespace mypetpal.dbContext
                 .HasKey(pa => pa.PetId);
 
             modelBuilder.Entity<PetAttributes>()
-                .HasIndex(pa => pa.PublicId)
+                .HasIndex(pa => pa.Id)
                 .IsUnique();
 
 

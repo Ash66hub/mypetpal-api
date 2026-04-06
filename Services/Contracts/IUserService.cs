@@ -13,7 +13,7 @@ namespace mypetpal.Services.Contracts
 
         Task<User?> GetUserById(long userId);
 
-        Task<User?> GetUserByPublicId(string publicId);
+        Task<User?> GetUserById(string id);
 
         Task<User?> GetUserByUsername(string username);
 

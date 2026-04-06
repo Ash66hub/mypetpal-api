@@ -10,7 +10,7 @@ namespace mypetpal.Services.Contracts
 
         Task<PetAttributes?> GetPetByIdAsync(long petId);
 
-        Task<PetAttributes?> GetPetByPublicIdAsync(string petPublicId);
+        Task<PetAttributes?> GetPetByIdAsync(string id);
 
         Task<PetAttributes?> UpdatePetAsync(long petId, PetAttributes updatedPet);
 

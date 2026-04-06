@@ -13,7 +13,7 @@ namespace mypetpal.Models
         public long PetId { get; set; }
 
         [MaxLength(50)]
-        public string? PublicId { get; set; }
+        public string? Id { get; set; }
 
         [Required]
         [MaxLength(50)]

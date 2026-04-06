@@ -31,7 +31,7 @@ namespace mypetpal.Services
 
             var newPet = new PetAttributes
             {
-                PublicId = await GenerateUniquePetPublicIdAsync(),
+                Id = await GenerateUniquePetIdAsync(),
                 PetName = petAttributes.PetName,
                 PetType = ParsePetType(selectedPetAssetKey),
                 PetLevel = 1,
@@ -95,10 +95,10 @@ namespace mypetpal.Services
             return pet;
         }
 
-        public async Task<PetAttributes?> GetPetByPublicIdAsync(string petPublicId)
+        public async Task<PetAttributes?> GetPetByIdAsync(string id)
         {
             var pet = await _context.PetAttributes
-                .FirstOrDefaultAsync(p => p.PublicId == petPublicId);
+                .FirstOrDefaultAsync(p => p.Id == id);
             HydrateSelection(pet);
             return pet;
         }
@@ -261,14 +261,14 @@ namespace mypetpal.Services
             return (int)Math.Floor(Math.Log(xp / baseXp, 2)) + 2;
         }
 
-        private async Task<string> GenerateUniquePetPublicIdAsync()
+        private async Task<string> GenerateUniquePetIdAsync()
         {
             string id;
             do
             {
-                id = PublicIdGenerator.NewId();
+                id = IdGenerator.NewId();
             }
-            while (await _context.PetAttributes.AnyAsync(p => p.PublicId == id));
+            while (await _context.PetAttributes.AnyAsync(p => p.Id == id));
 
             return id;
         }

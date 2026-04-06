@@ -24,14 +24,14 @@ namespace mypetpal.Controllers
         public async Task<IActionResult> CreatePet(
             [FromBody] PetAttributes petAttributes,
             [FromQuery] long? userId,
-            [FromQuery] string? userPublicId)
+            [FromQuery] string? id)
         {
             try
             {
-                var resolvedUserId = await ResolveUserId(userId, userPublicId);
+                var resolvedUserId = await ResolveUserId(userId, id);
                 if (resolvedUserId == null)
                 {
-                    return BadRequest("Provide either userId or userPublicId.");
+                    return BadRequest("Provide either userId or id.");
                 }
 
                 var newPet = await _petService.CreatePetAsync(petAttributes, resolvedUserId.Value);
@@ -45,12 +45,12 @@ namespace mypetpal.Controllers
 
         // GET: /Pets?userId={userId}
         [HttpGet]
-        public async Task<IActionResult> GetAllPets([FromQuery] long? userId, [FromQuery] string? userPublicId)
+        public async Task<IActionResult> GetAllPets([FromQuery] long? userId, [FromQuery] string? id)
         {
-            var resolvedUserId = await ResolveUserId(userId, userPublicId);
+            var resolvedUserId = await ResolveUserId(userId, id);
             if (resolvedUserId == null)
             {
-                return BadRequest("Provide either userId or userPublicId.");
+                return BadRequest("Provide either userId or id.");
             }
 
             var pets = await _petService.GetAllPetsAsync(resolvedUserId.Value);
@@ -69,11 +69,11 @@ namespace mypetpal.Controllers
             return Ok(pet);
         }
 
-        // GET: /Pets/public/{petPublicId}
-        [HttpGet("public/{petPublicId}")]
-        public async Task<IActionResult> GetPetByPublicId(string petPublicId)
+        // GET: /Pets/id/{id}
+        [HttpGet("id/{id}")]
+        public async Task<IActionResult> GetPetById(string id)
         {
-            var pet = await _petService.GetPetByPublicIdAsync(petPublicId);
+            var pet = await _petService.GetPetByIdAsync(id);
             if (pet == null)
             {
                 return NotFound();
@@ -107,19 +107,19 @@ namespace mypetpal.Controllers
             return NoContent();
         }
 
-        private async Task<long?> ResolveUserId(long? userId, string? userPublicId)
+        private async Task<long?> ResolveUserId(long? userId, string? id)
         {
             if (userId.HasValue)
             {
                 return userId.Value;
             }
 
-            if (string.IsNullOrWhiteSpace(userPublicId))
+            if (string.IsNullOrWhiteSpace(id))
             {
                 return null;
             }
 
-            var user = await _userService.GetUserByPublicId(userPublicId);
+            var user = await _userService.GetUserById(id);
             return user?.UserId;
         }
     }

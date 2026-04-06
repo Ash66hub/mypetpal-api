@@ -81,10 +81,10 @@ namespace mypetpal.Controllers
             return Ok(user);
         }
 
-        [HttpGet("public/{publicId}")]
-        public async Task<IActionResult> GetUserByPublicId(string publicId)
+        [HttpGet("id/{id}")]
+        public async Task<IActionResult> GetUserById(string id)
         {
-            var user = await _userService.GetUserByPublicId(publicId);
+            var user = await _userService.GetUserById(id);
 
             if (user == null)
             {
@@ -155,7 +155,7 @@ namespace mypetpal.Controllers
         }
 
         [HttpPost("activity")]
-        public async Task<IActionResult> UpdateActivity([FromQuery] long? userId, [FromQuery] string? userPublicId)
+        public async Task<IActionResult> UpdateActivity([FromQuery] long? userId, [FromQuery] string? id)
         {
             long resolvedUserId;
 
@@ -163,9 +163,9 @@ namespace mypetpal.Controllers
             {
                 resolvedUserId = userId.Value;
             }
-            else if (!string.IsNullOrWhiteSpace(userPublicId))
+            else if (!string.IsNullOrWhiteSpace(id))
             {
-                var user = await _userService.GetUserByPublicId(userPublicId);
+                var user = await _userService.GetUserById(id);
                 if (user == null)
                 {
                     return NotFound();
@@ -175,7 +175,7 @@ namespace mypetpal.Controllers
             }
             else
             {
-                return BadRequest("Provide either userId or userPublicId.");
+                return BadRequest("Provide either userId or id.");
             }
 
             var updated = await _experienceService.TouchLastActiveAsync(resolvedUserId);

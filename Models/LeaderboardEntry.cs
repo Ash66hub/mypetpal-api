@@ -4,7 +4,7 @@ namespace mypetpal.Models
     {
         public long UserId { get; set; }
 
-        public string? PublicId { get; set; }
+        public string? Id { get; set; }
 
         public string Username { get; set; } = string.Empty;
 
