@@ -14,8 +14,30 @@ namespace mypetpal.MinimalApiEndpoints
             var social = app.MapGroup("social");
             var onlineThreshold = TimeSpan.FromMinutes(1);
 
+            static async Task<string?> ResolveSignedProfilePictureUrl(
+                IProfilePictureStorageService storageService,
+                string? metadataJson)
+            {
+                if (string.IsNullOrWhiteSpace(metadataJson))
+                {
+                    return null;
+                }
+
+                UserMetadata? metadata;
+                try
+                {
+                    metadata = System.Text.Json.JsonSerializer.Deserialize<UserMetadata>(metadataJson);
+                }
+                catch
+                {
+                    return null;
+                }
+
+                return await storageService.CreateSignedReadUrlAsync(metadata?.ProfilePictureUrl);
+            }
+
             // Search users
-            social.MapGet("search", async (string query, long currentUserId, ApplicationDbContext db) => {
+            social.MapGet("search", async (string query, long currentUserId, ApplicationDbContext db, IProfilePictureStorageService storageService) => {
                 var users = await db.Users
                     .Where(u => u.Username == query && u.UserId != currentUserId)
                     .Take(1)
@@ -32,18 +54,26 @@ namespace mypetpal.MinimalApiEndpoints
                     .ToListAsync();
 
                 var now = DateTime.UtcNow;
-                return users.Select(u => {
+                var result = new List<UserSearchResult>(users.Count);
+
+                foreach (var u in users)
+                {
                     var isFriend = friendIds.Contains(u.UserId);
                     var isActive = u.LastActive >= now - onlineThreshold;
-                    return new UserSearchResult {
+                    var profilePictureUrl = await ResolveSignedProfilePictureUrl(storageService, u.Metadata);
+
+                    result.Add(new UserSearchResult {
                         UserId = u.UserId,
                         Username = u.Username!,
+                        ProfilePictureUrl = profilePictureUrl,
                         IsFriend = isFriend,
                         IsPending = pendingSent.Contains(u.UserId),
                         // Only reveal online status to confirmed friends, not strangers/pending
                         IsOnline = isFriend && isActive && SocialHub.IsUserConnected(u.UserId.ToString())
-                    };
-                });
+                    });
+                }
+
+                return result;
             });
 
             // Send request
@@ -75,7 +105,7 @@ namespace mypetpal.MinimalApiEndpoints
             });
 
             // List friends
-            social.MapGet("list", async (long userId, ApplicationDbContext db) => {
+            social.MapGet("list", async (long userId, ApplicationDbContext db, IProfilePictureStorageService storageService) => {
                 var friendIds = await db.Friendships
                     .Where(f => (f.UserId == userId || f.FriendId == userId) && f.Status == FriendshipStatus.Accepted)
                     .Select(f => f.UserId == userId ? f.FriendId : f.UserId)
@@ -87,20 +117,31 @@ namespace mypetpal.MinimalApiEndpoints
                     .Select(u => new { 
                         u.UserId, 
                         u.Username,
-                        u.LastActive
+                        u.LastActive,
+                        u.Metadata
                     })
                     .ToListAsync();
 
-                return friends.Select(u => new
+                var result = new List<object>(friends.Count);
+
+                foreach (var u in friends)
                 {
-                    u.UserId,
-                    u.Username,
-                    IsOnline = u.LastActive >= now - onlineThreshold && SocialHub.IsUserConnected(u.UserId.ToString())
-                });
+                    var profilePictureUrl = await ResolveSignedProfilePictureUrl(storageService, u.Metadata);
+
+                    result.Add(new
+                    {
+                        u.UserId,
+                        u.Username,
+                        ProfilePictureUrl = profilePictureUrl,
+                        IsOnline = u.LastActive >= now - onlineThreshold && SocialHub.IsUserConnected(u.UserId.ToString())
+                    });
+                }
+
+                return result;
             });
 
             // Pending requests (incoming)
-            social.MapGet("pending", async (long userId, ApplicationDbContext db) => {
+            social.MapGet("pending", async (long userId, ApplicationDbContext db, IProfilePictureStorageService storageService) => {
                 var requests = await db.Friendships
                     .Where(f => f.FriendId == userId && f.Status == FriendshipStatus.Pending)
                     .ToListAsync();
@@ -108,13 +149,27 @@ namespace mypetpal.MinimalApiEndpoints
                 var senderIds = requests.Select(f => f.UserId).ToList();
                 var senders = await db.Users
                     .Where(u => senderIds.Contains(u.UserId))
-                    .ToDictionaryAsync(u => u.UserId, u => u.Username);
+                    .Select(u => new { u.UserId, u.Username, u.Metadata })
+                    .ToListAsync();
 
-                return requests.Select(f => new {
-                    f.Id,
-                    f.UserId,
-                    SenderUsername = senders.ContainsKey(f.UserId) ? senders[f.UserId] : "Unknown"
-                });
+                var senderMap = senders.ToDictionary(u => u.UserId, u => u);
+                var result = new List<object>(requests.Count);
+
+                foreach (var request in requests)
+                {
+                    senderMap.TryGetValue(request.UserId, out var sender);
+                    var profilePictureUrl = await ResolveSignedProfilePictureUrl(storageService, sender?.Metadata);
+
+                    result.Add(new
+                    {
+                        request.Id,
+                        request.UserId,
+                        SenderUsername = sender?.Username ?? "Unknown",
+                        ProfilePictureUrl = profilePictureUrl
+                    });
+                }
+
+                return result;
             });
 
             // Respond to request
@@ -166,7 +221,7 @@ namespace mypetpal.MinimalApiEndpoints
             });
 
             // Get pending visit invitations for a user
-            social.MapGet("visit-invites", async (long userId, ApplicationDbContext db) => {
+            social.MapGet("visit-invites", async (long userId, ApplicationDbContext db, IProfilePictureStorageService storageService) => {
                 var invites = await db.VisitInvitations
                     .Where(v => v.ReceiverId == userId && v.Status == InvitationStatus.Pending)
                     .ToListAsync();
@@ -174,14 +229,28 @@ namespace mypetpal.MinimalApiEndpoints
                 var senderIds = invites.Select(v => v.SenderId).ToList();
                 var senders = await db.Users
                     .Where(u => senderIds.Contains(u.UserId))
-                    .ToDictionaryAsync(u => u.UserId, u => u.Username);
+                    .Select(u => new { u.UserId, u.Username, u.Metadata })
+                    .ToListAsync();
 
-                return invites.Select(v => new {
-                    v.Id,
-                    v.SenderId,
-                    SenderUsername = senders.ContainsKey(v.SenderId) ? senders[v.SenderId] : "Unknown",
-                    v.CreatedAt
-                });
+                var senderMap = senders.ToDictionary(u => u.UserId, u => u);
+                var result = new List<object>(invites.Count);
+
+                foreach (var invite in invites)
+                {
+                    senderMap.TryGetValue(invite.SenderId, out var sender);
+                    var profilePictureUrl = await ResolveSignedProfilePictureUrl(storageService, sender?.Metadata);
+
+                    result.Add(new
+                    {
+                        invite.Id,
+                        invite.SenderId,
+                        SenderUsername = sender?.Username ?? "Unknown",
+                        ProfilePictureUrl = profilePictureUrl,
+                        invite.CreatedAt
+                    });
+                }
+
+                return result;
             });
 
             // Respond to visit invitation

@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Http;
 using mypetpal.Data.Common;
 using mypetpal.Services.Contracts;
 using mypetpal.Models;
@@ -10,11 +11,16 @@ namespace mypetpal.Services
     {
         private readonly ApplicationDbContext _context;
         private readonly ILogger<UserService> _logger;
+        private readonly IProfilePictureStorageService _profilePictureStorageService;
 
-        public UserService(ApplicationDbContext context, ILogger<UserService> logger)
+        public UserService(
+            ApplicationDbContext context,
+            ILogger<UserService> logger,
+            IProfilePictureStorageService profilePictureStorageService)
         {
             _context = context;
             _logger = logger;
+            _profilePictureStorageService = profilePictureStorageService;
         }
 
         public async Task<User> CreateNewUser(string? username, string? email, string password)
@@ -45,12 +51,19 @@ namespace mypetpal.Services
 
         public async Task<IEnumerable<User>> GetAllUsers()
         {
-            return await _context.Users.Select(u => new User
+            var users = await _context.Users.Select(u => new User
             {
                 UserId = u.UserId,
                 Username = u.Username,
                 Email = u.Email
             }).ToListAsync();
+
+            foreach (var user in users)
+            {
+                await PopulateTransientUserFieldsAsync(user);
+            }
+
+            return users;
         }
 
         public async Task<IEnumerable<LeaderboardEntry>> GetLeaderboard(int top = 10)
@@ -63,24 +76,28 @@ namespace mypetpal.Services
                 .OrderByDescending(u => u.TotalExperience)
                 .ThenBy(u => u.Username)
                 .Take(safeTop)
-                .Select(u => new
-                {
-                    u.UserId,
-                    u.PublicId,
-                    u.Username,
-                    u.TotalExperience
-                })
                 .ToListAsync();
 
-            return users
-                .Select(u => new LeaderboardEntry
+            var leaderboard = new List<LeaderboardEntry>(users.Count);
+
+            foreach (var user in users)
+            {
+                var metadata = user.GetUserMetadata();
+                var signedAvatarUrl = await _profilePictureStorageService
+                    .CreateSignedReadUrlAsync(metadata?.ProfilePictureUrl);
+
+                leaderboard.Add(new LeaderboardEntry
                 {
-                    UserId = u.UserId,
-                    PublicId = u.PublicId,
-                    Username = u.Username ?? "Unknown",
-                    Experience = u.TotalExperience,
-                    Level = User.CalculateLevel(u.TotalExperience)
-                })
+                    UserId = user.UserId,
+                    PublicId = user.PublicId,
+                    Username = user.Username ?? "Unknown",
+                    ProfilePictureUrl = signedAvatarUrl,
+                    Experience = user.TotalExperience,
+                    Level = User.CalculateLevel(user.TotalExperience)
+                });
+            }
+
+            return leaderboard
                 .OrderByDescending(entry => entry.Level)
                 .ThenByDescending(entry => entry.Experience)
                 .ThenBy(entry => entry.Username)
@@ -90,21 +107,21 @@ namespace mypetpal.Services
         public async Task<User?> GetUserById(long userId)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
-            PopulateAuthProviderFields(user);
+            await PopulateTransientUserFieldsAsync(user);
             return user;
         }
 
         public async Task<User?> GetUserByPublicId(string publicId)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.PublicId == publicId);
-            PopulateAuthProviderFields(user);
+            await PopulateTransientUserFieldsAsync(user);
             return user;
         }
 
         public async Task<User?> GetUserByUsername(string username)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
-            PopulateAuthProviderFields(user);
+            await PopulateTransientUserFieldsAsync(user);
             return user;
         }
 
@@ -112,7 +129,7 @@ namespace mypetpal.Services
         public async Task<User?> GetUserByEmail(string email)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
-            PopulateAuthProviderFields(user);
+            await PopulateTransientUserFieldsAsync(user);
             return user;
         }
 
@@ -137,6 +154,43 @@ namespace mypetpal.Services
 
             await _context.SaveChangesAsync();
 
+            return user;
+        }
+
+        public async Task<User> UpdateProfilePicture(long userId, IFormFile file)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+
+            if (user == null)
+            {
+                throw new KeyNotFoundException("User not found");
+            }
+
+            if (file.Length > 5 * 1024 * 1024)
+            {
+                throw new InvalidOperationException("File must be 5MB or less.");
+            }
+
+            await _profilePictureStorageService.DeleteAllForUserAsync(userId);
+
+            await using var stream = file.OpenReadStream();
+            var objectPath = await _profilePictureStorageService.UploadAsync(
+                userId,
+                stream,
+                file.ContentType,
+                file.FileName);
+
+            var metadata = user.GetUserMetadata() ?? new UserMetadata();
+            metadata.ProfilePictureUrl = null;
+            metadata.ProfilePictureUrl = objectPath;
+            metadata.Metadata_updatedUtc = DateTime.UtcNow;
+            user.SetUserMetadata(metadata);
+
+            _logger.LogInformation("Updated profile picture for User {UserId}", userId);
+
+            await _context.SaveChangesAsync();
+
+            await PopulateTransientUserFieldsAsync(user);
             return user;
         }
 
@@ -196,7 +250,7 @@ namespace mypetpal.Services
             return id;
         }
 
-        private static void PopulateAuthProviderFields(User? user)
+        private async Task PopulateTransientUserFieldsAsync(User? user)
         {
             if (user == null)
             {
@@ -207,6 +261,7 @@ namespace mypetpal.Services
             user.AuthProvider = metadata?.Provider;
             user.HasLocalPassword = metadata?.HasLocalPassword
                 ?? !string.Equals(metadata?.Provider, "Google", StringComparison.OrdinalIgnoreCase);
+            user.ProfilePictureUrl = await _profilePictureStorageService.CreateSignedReadUrlAsync(metadata?.ProfilePictureUrl);
         }
     }
 }

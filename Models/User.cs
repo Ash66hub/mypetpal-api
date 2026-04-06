@@ -33,6 +33,9 @@ namespace mypetpal.Models
         [NotMapped]
         public bool HasLocalPassword { get; set; } = true;
 
+        [NotMapped]
+        public string? ProfilePictureUrl { get; set; }
+
         public string? RefreshToken { get; set; }
 
         public long TotalExperience { get; set; } = 0;

@@ -34,6 +34,7 @@ namespace mypetpal.Models
     {
         public long UserId { get; set; }
         public string Username { get; set; } = string.Empty;
+        public string? ProfilePictureUrl { get; set; }
         public bool IsFriend { get; set; }
         public bool IsPending { get; set; }
         public bool IsOnline { get; set; }
@@ -43,6 +44,7 @@ namespace mypetpal.Models
     {
         public long UserId { get; set; }
         public string Username { get; set; } = string.Empty;
+        public string? ProfilePictureUrl { get; set; }
         public bool IsOnline { get; set; }
     }
 }

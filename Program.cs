@@ -94,6 +94,7 @@ builder.Services.AddSwaggerGen(c =>
 
 // Register Services so that they can be injected as needed
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IProfilePictureStorageService, ProfilePictureStorageService>();
 builder.Services.AddScoped<IPetService, PetService>();
 builder.Services.AddScoped<IDecorService, DecorService>();
 builder.Services.AddScoped<IUserSettingsService, UserSettingsService>();

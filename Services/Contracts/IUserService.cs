@@ -1,4 +1,5 @@
 ﻿using mypetpal.Models;
+using Microsoft.AspNetCore.Http;
 
 namespace mypetpal.Services.Contracts
 {
@@ -19,6 +20,8 @@ namespace mypetpal.Services.Contracts
         Task<User?> GetUserByEmail(string email);
 
         Task<User> UpdateUser(long userId, string username, string email, string password);
+
+        Task<User> UpdateProfilePicture(long userId, IFormFile file);
 
         Task<bool> DeleteUser(long userId);
 

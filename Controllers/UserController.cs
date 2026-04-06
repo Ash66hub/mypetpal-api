@@ -117,6 +117,29 @@ namespace mypetpal.Controllers
             }
         }
 
+        [HttpPost("{userId}/profile-picture")]
+        public async Task<IActionResult> UpdateProfilePicture(long userId, IFormFile? file)
+        {
+            if (file == null || file.Length == 0)
+            {
+                return BadRequest("Profile image file is required.");
+            }
+
+            try
+            {
+                var updated = await _userService.UpdateProfilePicture(userId, file);
+                return Ok(updated);
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         // DELETE: User/{userId}
         [HttpDelete("{userId}")]
         public async Task<IActionResult> DeleteUser(long userId)

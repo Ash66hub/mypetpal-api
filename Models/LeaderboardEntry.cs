@@ -8,6 +8,8 @@ namespace mypetpal.Models
 
         public string Username { get; set; } = string.Empty;
 
+        public string? ProfilePictureUrl { get; set; }
+
         public int Level { get; set; }
 
         public long Experience { get; set; }
