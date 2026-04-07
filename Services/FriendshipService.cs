@@ -63,9 +63,9 @@ namespace mypetpal.Services
             request.Status = FriendshipStatus.Accepted;
             request.UpdatedAt = DateTime.UtcNow;
 
-            // Friendship confirmation grants +10 EXP to both players.
-            requester.TotalExperience += 10;
-            receiver.TotalExperience += 10;
+            // Friendship confirmation grants +25 EXP to both players.
+            requester.TotalExperience += 25;
+            receiver.TotalExperience += 25;
             requester.LastActive = DateTime.UtcNow;
             receiver.LastActive = DateTime.UtcNow;
 

@@ -44,7 +44,7 @@ namespace mypetpal.Services
                     _logger.LogError(ex, "Error while processing experience heartbeat tick.");
                 }
 
-                await Task.Delay(TimeSpan.FromSeconds(60), stoppingToken);
+                await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
             }
         }
 
@@ -90,7 +90,7 @@ namespace mypetpal.Services
             await db.Users
                 .Where(u => connectedIds.Contains(u.UserId) && u.LastActive >= threshold)
                 .ExecuteUpdateAsync(setters => setters
-                    .SetProperty(u => u.TotalExperience, u => u.TotalExperience + 1), cancellationToken);
+                    .SetProperty(u => u.TotalExperience, u => u.TotalExperience + 2), cancellationToken);
 
             var activeIds = activeBefore.Select(x => x.UserId).ToList();
             var activeAfter = await db.Users
