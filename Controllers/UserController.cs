@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using mypetpal.Services.Contracts;
 using mypetpal.Models;
 using Microsoft.AspNetCore.Authorization;
+using System.Linq;
 
 namespace mypetpal.Controllers
 {
@@ -12,6 +13,23 @@ namespace mypetpal.Controllers
     {
         private readonly IUserService _userService;
         private readonly IExperienceService _experienceService;
+
+        private UserDto MapToDto(User user, bool includeEmail = false)
+        {
+            return new UserDto
+            {
+                UserId = user.UserId,
+                Id = user.Id,
+                Username = user.Username,
+                ProfilePictureUrl = user.ProfilePictureUrl,
+                CurrentLevel = user.CurrentLevel,
+                TotalExperience = user.TotalExperience,
+                LastActive = user.LastActive,
+                Email = includeEmail ? user.Email : null,
+                AuthProvider = user.AuthProvider,
+                HasLocalPassword = user.HasLocalPassword
+            };
+        }
 
         public UsersController(IUserService userService, IExperienceService experienceService)
         {
@@ -32,7 +50,7 @@ namespace mypetpal.Controllers
             try
             {
                 var createdUser = await _userService.CreateNewUser(user.Username, user.Email, user.Password);
-                return CreatedAtAction(nameof(GetUserById), new { userId = createdUser.UserId }, createdUser);
+                return CreatedAtAction(nameof(GetUserById), new { userId = createdUser.UserId }, MapToDto(createdUser, true));
             }
             catch (ArgumentException ex)
             {
@@ -57,7 +75,8 @@ namespace mypetpal.Controllers
         public async Task<IActionResult> GetAllUsers()
         {
             var users = await _userService.GetAllUsers();
-            return Ok(users);
+            var dtos = users.Select(u => MapToDto(u, false));
+            return Ok(dtos);
         }
 
         [HttpGet("leaderboard")]
@@ -78,11 +97,11 @@ namespace mypetpal.Controllers
                 return NotFound();
             }
 
-            return Ok(user);
+            return Ok(MapToDto(user, false));
         }
 
         [HttpGet("id/{id}")]
-        public async Task<IActionResult> GetUserById(string id)
+        public async Task<IActionResult> GetUserByStringId(string id)
         {
             var user = await _userService.GetUserById(id);
 
@@ -91,7 +110,7 @@ namespace mypetpal.Controllers
                 return NotFound();
             }
 
-            return Ok(user);
+            return Ok(MapToDto(user, false));
         }
 
         // PATCH: User/{userId} (Edit username, email or password)
@@ -103,7 +122,7 @@ namespace mypetpal.Controllers
                 if(updatedUser.Username != null && updatedUser.Email != null)
                 {
                     var updated = await _userService.UpdateUser(userId, updatedUser.Username, updatedUser.Email, updatedUser.Password);
-                    return Ok(updated);
+                    return Ok(MapToDto(updated, true));
                 }
                 else
                 {
@@ -128,7 +147,7 @@ namespace mypetpal.Controllers
             try
             {
                 var updated = await _userService.UpdateProfilePicture(userId, file);
-                return Ok(updated);
+                return Ok(MapToDto(updated, true));
             }
             catch (KeyNotFoundException)
             {

@@ -22,6 +22,7 @@ namespace mypetpal.Models
         public string? Email { get; set; }
 
         [Required]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWriting)]
         public string Password { get; set; } = string.Empty;
 
         [JsonIgnore]
@@ -36,6 +37,7 @@ namespace mypetpal.Models
         [NotMapped]
         public string? ProfilePictureUrl { get; set; }
 
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWriting)]
         public string? RefreshToken { get; set; }
 
         public long TotalExperience { get; set; } = 0;

@@ -173,6 +173,11 @@ namespace mypetpal.Controllers
                 return BadRequest("Password must be at least 12 characters and include both letters and numbers.");
             }
 
+            if (request.OldPassword == request.NewPassword)
+            {
+                return BadRequest("New password must be different from your old password.");
+            }
+
             var user = await _userService.GetUserById(request.UserId);
             var metadata = user?.GetUserMetadata();
             var hasLocalPassword = metadata?.HasLocalPassword

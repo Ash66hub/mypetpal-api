@@ -1,5 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
+
+using System;
 
 namespace mypetpal.Models
 {
@@ -23,6 +26,7 @@ namespace mypetpal.Models
         public bool NeighborhoodPanelCollapsed { get; set; } = false;
 
         [ForeignKey("UserId")]
+        [JsonIgnore]
         public virtual User? User { get; set; }
     }
 }
