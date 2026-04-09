@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -14,12 +14,14 @@ namespace mypetpal.Migrations
                 name: "MiniGameScores",
                 columns: table => new
                 {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     UserId = table.Column<long>(type: "bigint", nullable: false),
                     SaveTheJunkHighScore = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_MiniGameScores", x => x.UserId);
+                    table.PrimaryKey("PK_MiniGameScores", x => x.Id);
                     table.ForeignKey(
                         name: "FK_MiniGameScores_Users_UserId",
                         column: x => x.UserId,
@@ -27,6 +29,11 @@ namespace mypetpal.Migrations
                         principalColumn: "UserId",
                         onDelete: ReferentialAction.Cascade);
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MiniGameScores_UserId",
+                table: "MiniGameScores",
+                column: "UserId");
         }
 
         /// <inheritdoc />

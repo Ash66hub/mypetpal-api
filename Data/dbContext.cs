@@ -16,6 +16,7 @@ namespace mypetpal.dbContext
         public DbSet<DecorInstance> DecorInstances { get; set; }
         public DbSet<UserSettings> UserSettings { get; set; }
         public DbSet<VisitInvitation> VisitInvitations { get; set; }
+        public DbSet<MiniGameScore> MiniGameScores { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -67,6 +68,12 @@ namespace mypetpal.dbContext
 
             modelBuilder.Entity<VisitInvitation>()
                 .HasKey(v => v.Id);
+
+            modelBuilder.Entity<MiniGameScore>()
+                .HasKey(m => m.Id);
+
+            modelBuilder.Entity<MiniGameScore>()
+                .HasIndex(m => m.UserId);
 
             base.OnModelCreating(modelBuilder);
         }
